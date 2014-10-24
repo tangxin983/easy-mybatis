@@ -24,6 +24,14 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<jdk.version>1.7</jdk.version>
 	</properties>
+	
+	<repositories>
+		<repository> 
+			<id>nexus-osc</id>
+			<name>Nexus osc</name>
+			<url>http://maven.oschina.net/content/groups/public/</url>
+		</repository>
+	</repositories>
 
 	<dependencies>
 		<dependency>

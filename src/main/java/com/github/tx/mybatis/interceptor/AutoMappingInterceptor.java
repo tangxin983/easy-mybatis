@@ -1,6 +1,5 @@
 package com.github.tx.mybatis.interceptor;
 
-import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,7 +9,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.ibatis.executor.statement.StatementHandler;
-import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.ResultFlag;
 import org.apache.ibatis.mapping.ResultMap;
@@ -24,7 +22,6 @@ import org.apache.ibatis.reflection.MetaClass;
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.session.Configuration;
 
-import com.github.tx.mybatis.mapper.BaseMapper;
 import com.github.tx.mybatis.util.ReflectUtil;
 
 /**
@@ -33,7 +30,7 @@ import com.github.tx.mybatis.util.ReflectUtil;
  * @since 2014年10月23日
  */
 @Intercepts({ @Signature(type = StatementHandler.class, method = "prepare", args = { Connection.class }) })
-public class GenericMappingInterceptor extends BaseInterceptor implements Interceptor {
+public class AutoMappingInterceptor extends BaseInterceptor implements Interceptor {
 
 	private static final String GENERATE_RESULTMAP_NAME = "GenerateResultMap";
 
@@ -42,13 +39,9 @@ public class GenericMappingInterceptor extends BaseInterceptor implements Interc
 		StatementHandler statementHandler = (StatementHandler) invocation.getTarget();
 		MetaObject metaStatementHandler = getMetaObject(statementHandler);
 		MappedStatement mappedStatement = (MappedStatement) metaStatementHandler.getValue("delegate.mappedStatement");
-		BoundSql boundSql = statementHandler.getBoundSql();
-		
 		String statementId = mappedStatement.getId();
-		String id = statementId.substring(statementId.lastIndexOf(".") + 1);// mapper方法名
 		String namespace = statementId.substring(0, statementId.lastIndexOf("."));// mapper类名
-		String sql = boundSql.getSql().toLowerCase();
-		if (isBaseSelectStatement(id, sql)) {// 只针对BaseMapper的select语句
+		if (ReflectUtil.isAutoMappper(mappedStatement)) {
 			Class<?> entityClazz = getEntityClass(mappedStatement);
 			if (entityClazz != null) {
 				// 重写resultMaps属性
@@ -159,26 +152,6 @@ public class GenericMappingInterceptor extends BaseInterceptor implements Interc
 			javaType = Object.class;
 		}
 		return javaType;
-	}
-
-	/**
-	 * 判断是否BaseMapper的select语句
-	 * 
-	 * @param methodName
-	 * @param sql
-	 * @return
-	 */
-	private boolean isBaseSelectStatement(String methodName, String sql) {
-		if (sql.indexOf("select") == -1) {
-			return false;
-		}
-		Method[] methods = BaseMapper.class.getDeclaredMethods();
-		for (Method method : methods) {
-			if (methodName.equals(method.getName())) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	@Override

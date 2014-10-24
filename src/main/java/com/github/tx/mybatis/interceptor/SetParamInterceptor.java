@@ -14,16 +14,22 @@ import org.apache.ibatis.plugin.Signature;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
+import com.github.tx.mybatis.mapper.CrudTemplate;
+import com.github.tx.mybatis.util.ReflectUtil;
+
 /**
  * 将泛型类设置到参数中
+ * 
  * @author tangx
  * @since 2014年10月24日
  */
-@Intercepts({ @Signature(type = Executor.class, method = "query", args = {
-		MappedStatement.class, Object.class, RowBounds.class,
-		ResultHandler.class }) })
-public class SetGenericParamInterceptor extends BaseInterceptor implements
-		Interceptor {
+@Intercepts({
+		@Signature(type = Executor.class, method = "query", args = {
+				MappedStatement.class, Object.class, RowBounds.class,
+				ResultHandler.class }),
+		@Signature(type = Executor.class, method = "update", args = {
+				MappedStatement.class, Object.class }) })
+public class SetParamInterceptor extends BaseInterceptor implements Interceptor {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
@@ -31,22 +37,24 @@ public class SetGenericParamInterceptor extends BaseInterceptor implements
 		final Object[] queryArgs = invocation.getArgs();
 		final MappedStatement ms = (MappedStatement) queryArgs[0];
 		final Object parameter = queryArgs[1];
-		Class<?> entityClazz = getEntityClass(ms);
-		if (entityClazz != null) {
-			// 将泛型类加入到参数中供CrudTemplate使用
-			if (parameter != null) {
-				Map map;
-				if (parameter instanceof Map) {
-					map = (HashMap) parameter;
-					map.put("", entityClazz);
+		if (ReflectUtil.isAutoMappper(ms)) {
+			Class<?> entityClazz = getEntityClass(ms);
+			if (entityClazz != null) {
+				// 将泛型类加入到参数中供CrudTemplate使用
+				if (parameter != null) {
+					Map map;
+					if (parameter instanceof Map) {
+						map = (HashMap) parameter;
+						map.put(CrudTemplate.CLASS_KEY, entityClazz);
+					} else {
+						map = new HashMap();
+						map.put(CrudTemplate.PARA_KEY, parameter);
+						map.put(CrudTemplate.CLASS_KEY, entityClazz);
+					}
+					queryArgs[1] = map;
 				} else {
-					map = new HashMap();
-					map.put("1", parameter);
-					map.put("2", entityClazz);
+					queryArgs[1] = entityClazz;
 				}
-				queryArgs[1] = map;
-			} else {
-				queryArgs[1] = entityClazz;
 			}
 		}
 		return invocation.proceed();

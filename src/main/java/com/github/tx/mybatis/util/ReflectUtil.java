@@ -1,6 +1,7 @@
 package com.github.tx.mybatis.util;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -12,6 +13,9 @@ import javax.persistence.Table;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.ibatis.mapping.MappedStatement;
+
+import com.github.tx.mybatis.annotation.AutoResultMap;
 
 /**
  * 反射工具类
@@ -296,6 +300,31 @@ public class ReflectUtil {
 		}
 		return (Class) params[index];
 	}
+	
+	/**
+	 * 判断是否需要自动生成resultMap
+	 * @param ms
+	 * @return
+	 */
+	public static boolean isAutoMappper(MappedStatement ms) {
+		String statementId = ms.getId();
+		String id = statementId.substring(statementId.lastIndexOf(".") + 1);// mapper方法名
+		String namespace = statementId.substring(0, statementId.lastIndexOf("."));// mapper类名
+		Class<?> mapperClass;
+		try {
+			mapperClass = Class.forName(namespace);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException("cant not find class:" + namespace);
+		}
+		Method[] methods = mapperClass.getMethods();
+		for (Method method : methods) {
+			if(id.equals(method.getName()) && method.isAnnotationPresent(AutoResultMap.class)){
+				return true;
+			}
+		}
+		return false;
+	}
+
 
 	/**
 	 * 判断字段值是否为空

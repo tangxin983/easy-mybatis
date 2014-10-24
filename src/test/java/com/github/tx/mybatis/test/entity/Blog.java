@@ -4,6 +4,8 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 /**
  * 
  * @author tangx
@@ -14,7 +16,7 @@ import javax.persistence.Table;
 public class Blog {
 
 	@Id
-	private String id;
+	private Integer id;
 
 	@Column
 	private String author;
@@ -22,11 +24,11 @@ public class Blog {
 	@Column
 	private String content;
 
-	public String getId() {
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(String id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 
@@ -45,5 +47,9 @@ public class Blog {
 	public void setContent(String content) {
 		this.content = content;
 	}
+	
+	public String toString() {
+        return ToStringBuilder.reflectionToString(this);
+    }
 
 }

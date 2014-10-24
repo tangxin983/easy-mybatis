@@ -6,8 +6,8 @@
 
 	<plugins>
 		<plugin interceptor="com.github.tx.mybatis.interceptor.PageInterceptor" />
-		<plugin interceptor="com.github.tx.mybatis.interceptor.SetGenericParamInterceptor" />
-		<plugin interceptor="com.github.tx.mybatis.interceptor.GenericMappingInterceptor" />
+		<plugin interceptor="com.github.tx.mybatis.interceptor.SetParamInterceptor" />
+		<plugin interceptor="com.github.tx.mybatis.interceptor.AutoMappingInterceptor" />
 	</plugins>
 
 	<environments default="development">

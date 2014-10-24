@@ -1,5 +1,7 @@
 package com.github.tx.mybatis.mapper;
 
+import java.util.Map;
+
 import org.apache.ibatis.jdbc.SQL;
 
 import com.github.tx.mybatis.util.ReflectUtil;
@@ -13,6 +15,10 @@ import com.github.tx.mybatis.util.ReflectUtil;
 
 public class CrudTemplate {
 	
+	public static final String CLASS_KEY = "clazz";
+
+	public static final String PARA_KEY = "para";
+	
 	/**
 	 * 查询所有记录
 	 * @param clazz
@@ -21,6 +27,37 @@ public class CrudTemplate {
 	public String select(final Class<?> clazz) {
 		return new SQL() {
 			{
+				SELECT("*");
+				FROM(ReflectUtil.getTableName(clazz));
+			}
+		}.toString();
+	}
+	
+	/**
+	 * 根据主键查找记录
+	 * @param parameter
+	 * @return
+	 */
+	public String selectById(final Map<String, Object> parameter) {
+		return new SQL() {
+			{
+				Class<?> clazz = (Class<?>) parameter.get(CLASS_KEY);
+				SELECT("*");
+				FROM(ReflectUtil.getTableName(clazz));
+				WHERE(ReflectUtil.getIdColumnName(clazz) + " = #{" + PARA_KEY + "}");
+			}
+		}.toString();
+	}
+	
+	/**
+	 * 查询所有记录(分页)
+	 * @param parameter
+	 * @return
+	 */
+	public String selectByPage(final Map<String, Object> parameter) {
+		return new SQL() {
+			{
+				Class<?> clazz = (Class<?>) parameter.get(CLASS_KEY);
 				SELECT("*");
 				FROM(ReflectUtil.getTableName(clazz));
 			}
@@ -74,6 +111,21 @@ public class CrudTemplate {
 				DELETE_FROM(ReflectUtil.getTableName(t.getClass()));
 				WHERE(ReflectUtil.getIdColumnName(t.getClass()) + " = #{"
 						+ ReflectUtil.getIdFieldName(t.getClass()) + "}");
+			}
+		}.toString();
+	}
+	
+	/**
+	 * 根据主键删除记录
+	 * @param t
+	 * @return
+	 */
+	public String deleteById(final Map<String, Object> parameter) {
+		return new SQL() {
+			{
+				Class<?> clazz = (Class<?>) parameter.get(CLASS_KEY);
+				DELETE_FROM(ReflectUtil.getTableName(clazz));
+				WHERE(ReflectUtil.getIdColumnName(clazz) + " = #{" + PARA_KEY + "}");
 			}
 		}.toString();
 	}
