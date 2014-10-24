@@ -22,7 +22,7 @@ import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.scripting.defaults.DefaultParameterHandler;
 import org.apache.ibatis.session.RowBounds;
 
-import com.github.tx.mybatis.core.Page;
+import com.github.tx.mybatis.entity.Page;
 
 /**
  * Mybatis数据库物理分页插件

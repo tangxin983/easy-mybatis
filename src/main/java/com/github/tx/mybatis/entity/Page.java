@@ -1,4 +1,4 @@
-package com.github.tx.mybatis.core;
+package com.github.tx.mybatis.entity;
 
 /**
  * 分页参数

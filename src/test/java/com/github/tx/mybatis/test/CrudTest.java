@@ -5,7 +5,7 @@ import java.util.List;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Test;
 
-import com.github.tx.mybatis.core.Page;
+import com.github.tx.mybatis.entity.Page;
 import com.github.tx.mybatis.test.entity.Blog;
 import com.github.tx.mybatis.test.mapper.BlogMapper;
 

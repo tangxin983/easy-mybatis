@@ -5,7 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
-import com.github.tx.mybatis.core.Page;
+import com.github.tx.mybatis.entity.Page;
 import com.github.tx.mybatis.mapper.BaseMapper;
 import com.github.tx.mybatis.test.entity.Blog;
 

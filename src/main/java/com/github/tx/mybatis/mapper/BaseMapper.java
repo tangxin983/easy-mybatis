@@ -7,8 +7,6 @@ import org.apache.ibatis.annotations.InsertProvider;
 import org.apache.ibatis.annotations.SelectProvider;
 import org.apache.ibatis.annotations.UpdateProvider;
 
-import com.github.tx.mybatis.core.CrudTemplate;
-
 /**
  * Mapper基类
  * @author tangx

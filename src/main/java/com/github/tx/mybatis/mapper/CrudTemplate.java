@@ -1,4 +1,4 @@
-package com.github.tx.mybatis.core;
+package com.github.tx.mybatis.mapper;
 
 import org.apache.ibatis.jdbc.SQL;
 
