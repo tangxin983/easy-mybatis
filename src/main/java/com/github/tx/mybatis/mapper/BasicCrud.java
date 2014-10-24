@@ -10,7 +10,6 @@ import org.apache.ibatis.annotations.UpdateProvider;
 
 import com.github.tx.mybatis.annotation.AutoResultMap;
 import com.github.tx.mybatis.entity.Page;
-import com.github.tx.mybatis.test.entity.Blog;
 
 /**
  * Mapper基类
@@ -18,13 +17,13 @@ import com.github.tx.mybatis.test.entity.Blog;
  * @since 2014年10月22日
  */
 
-public interface BaseMapper<T> {
+public interface BasicCrud<T> {
 	
 	/**
 	 * 查找所有记录
 	 * @return 
 	 */
-	@SelectProvider(type = CrudTemplate.class, method = "select")
+	@SelectProvider(type = BasicCrudTemplate.class, method = "select")
 	@AutoResultMap
 	public List<T> select();
 	
@@ -33,16 +32,16 @@ public interface BaseMapper<T> {
 	 * @param page
 	 * @return
 	 */
-	@SelectProvider(type = CrudTemplate.class, method = "selectByPage")
+	@SelectProvider(type = BasicCrudTemplate.class, method = "selectByPage")
 	@AutoResultMap
-	List<Blog> selectByPage(Page page);
+	List<T> selectByPage(Page page);
 	
 	/**
 	 * 根据主键查找记录
 	 * @param id
 	 * @return
 	 */
-	@SelectProvider(type = CrudTemplate.class, method = "selectById")
+	@SelectProvider(type = BasicCrudTemplate.class, method = "selectById")
 	@AutoResultMap
 	public T selectById(Serializable id);
 
@@ -50,28 +49,28 @@ public interface BaseMapper<T> {
 	 * 插入记录
 	 * @param t
 	 */
-	@InsertProvider(type = CrudTemplate.class, method = "insert")
+	@InsertProvider(type = BasicCrudTemplate.class, method = "insert")
 	public void insert(T t);
 
 	/**
 	 * 更新记录
 	 * @param t
 	 */
-	@UpdateProvider(type = CrudTemplate.class, method = "update")
+	@UpdateProvider(type = BasicCrudTemplate.class, method = "update")
 	public void update(T t);
 
 	/**
 	 * 删除记录
 	 * @param t
 	 */
-	@DeleteProvider(type = CrudTemplate.class, method = "delete")
+	@DeleteProvider(type = BasicCrudTemplate.class, method = "delete")
 	public void delete(T t);
 	
 	/**
 	 * 根据主键删除记录
 	 * @param id
 	 */
-	@DeleteProvider(type = CrudTemplate.class, method = "deleteById")
+	@DeleteProvider(type = BasicCrudTemplate.class, method = "deleteById")
 	@AutoResultMap
 	public void deleteById(Serializable id);
 }

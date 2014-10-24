@@ -14,7 +14,7 @@ import org.apache.ibatis.plugin.Signature;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
-import com.github.tx.mybatis.mapper.CrudTemplate;
+import com.github.tx.mybatis.mapper.BasicCrudTemplate;
 import com.github.tx.mybatis.util.ReflectUtil;
 
 /**
@@ -45,11 +45,11 @@ public class SetParamInterceptor extends BaseInterceptor implements Interceptor 
 					Map map;
 					if (parameter instanceof Map) {
 						map = (HashMap) parameter;
-						map.put(CrudTemplate.CLASS_KEY, entityClazz);
+						map.put(BasicCrudTemplate.CLASS_KEY, entityClazz);
 					} else {
 						map = new HashMap();
-						map.put(CrudTemplate.PARA_KEY, parameter);
-						map.put(CrudTemplate.CLASS_KEY, entityClazz);
+						map.put(BasicCrudTemplate.PARA_KEY, parameter);
+						map.put(BasicCrudTemplate.CLASS_KEY, entityClazz);
 					}
 					queryArgs[1] = map;
 				} else {

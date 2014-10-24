@@ -1,6 +1,6 @@
 package com.github.tx.mybatis.test.mapper;
 
-import com.github.tx.mybatis.mapper.BaseMapper;
+import com.github.tx.mybatis.mapper.BasicCrud;
 import com.github.tx.mybatis.test.entity.Blog;
 
 /**
@@ -9,6 +9,6 @@ import com.github.tx.mybatis.test.entity.Blog;
  * @since 2014年10月22日
  */
 
-public interface BlogMapper extends BaseMapper<Blog> {
+public interface BlogMapper extends BasicCrud<Blog> {
   
 }
