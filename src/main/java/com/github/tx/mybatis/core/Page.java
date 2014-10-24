@@ -1,0 +1,68 @@
+package com.github.tx.mybatis.core;
+
+/**
+ * 分页参数
+ * 
+ * @author tangx
+ * @since 2014年10月23日
+ */
+
+public class Page {
+
+	public static final int DEFAULT_SIZE = 10;
+
+	/** 每页显示几条 */
+	protected int size;
+
+	/** 数据库总记录数 */
+	protected int recordsTotal;
+
+	/** 总页数 */
+	protected int pageTotal;
+
+	/** 当前页 */
+	protected int currentPage;
+
+	public Page() {
+		this.currentPage = 1;
+		this.size = DEFAULT_SIZE;
+	}
+
+	public Page(int currentPage, int size) {
+		this.currentPage = currentPage;
+		this.size = size;
+	}
+
+	public int getSize() {
+		return size;
+	}
+
+	public void setSize(int size) {
+		this.size = size;
+	}
+
+	public int getRecordsTotal() {
+		return recordsTotal;
+	}
+
+	public void setRecordsTotal(int recordsTotal) {
+		this.recordsTotal = recordsTotal;
+	}
+
+	public int getPageTotal() {
+		return pageTotal;
+	}
+
+	public void setPageTotal(int pageTotal) {
+		this.pageTotal = pageTotal;
+	}
+
+	public int getCurrentPage() {
+		return currentPage;
+	}
+
+	public void setCurrentPage(int currentPage) {
+		this.currentPage = currentPage;
+	}
+
+}
