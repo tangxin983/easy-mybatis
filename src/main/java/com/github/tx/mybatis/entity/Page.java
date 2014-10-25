@@ -12,16 +12,16 @@ public class Page {
 	public static final int DEFAULT_SIZE = 10;
 
 	/** 每页显示几条 */
-	protected int size;
+	private int size;
 
 	/** 数据库总记录数 */
-	protected int recordsTotal;
+	private int recordsTotal;
 
 	/** 总页数 */
-	protected int pageTotal;
+	private int pageTotal;
 
 	/** 当前页 */
-	protected int currentPage;
+	private int currentPage;
 
 	public Page() {
 		this.currentPage = 1;
