@@ -5,8 +5,9 @@
 <configuration>
 
 	<plugins>
-		<plugin interceptor="com.github.tx.mybatis.interceptor.PageInterceptor" />
+		<plugin interceptor="com.github.tx.mybatis.interceptor.CacheKeyInterceptor" />
 		<plugin interceptor="com.github.tx.mybatis.interceptor.AutoMappingInterceptor" />
+		<plugin interceptor="com.github.tx.mybatis.interceptor.PageInterceptor" />
 	</plugins>
 
 	<environments default="development">

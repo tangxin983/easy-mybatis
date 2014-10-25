@@ -66,7 +66,7 @@ public class CrudTest extends AbstractMybatisTest {
 		}
 	}
 
-	// @Test
+//	 @Test
 	public void deleteById() {
 		SqlSession session = sqlSessionFactory.openSession();
 		try {
@@ -84,10 +84,8 @@ public class CrudTest extends AbstractMybatisTest {
 		try {
 			BlogMapper mapper = session.getMapper(BlogMapper.class);
 			Page page = new Page();
-			List<Blog> pageblog = mapper.selectByPage(page);
-			logger.info("selectByPage_1:{}", pageblog.size());
 			page.setCurrentPage(2);
-			pageblog = mapper.selectByPage(page);
+			List<Blog> pageblog = mapper.selectByPage(page);
 			logger.info("selectByPage_2:{}", pageblog.size());
 		} finally {
 			session.close();

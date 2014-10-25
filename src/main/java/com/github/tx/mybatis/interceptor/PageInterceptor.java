@@ -4,8 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
@@ -47,18 +45,7 @@ public class PageInterceptor extends BaseInterceptor implements Interceptor {
 		BoundSql boundSql = statementHandler.getBoundSql();
 		Object paramObj = boundSql.getParameterObject();
 		String sql = boundSql.getSql().toLowerCase();
-		Page page = null;
-		if (paramObj instanceof Page && paramObj != null) {
-			page = (Page) paramObj;
-		} else if (paramObj instanceof Map) {
-			Map<?, ?> map = (HashMap<?, ?>) paramObj;
-			for (Object key : map.keySet()) {
-				Object value = map.get(key);
-				if (value instanceof Page && (value != null)) {
-					page = (Page) value;
-				}
-			}
-		}
+		Page page = retrievePageFromParam(paramObj);
 		if (sql.indexOf("select") != -1 && page != null) {
 			// 采用物理分页后，就不需要mybatis的内存分页了，所以重置下面的两个参数
 			metaStatementHandler.setValue("delegate.rowBounds.offset",

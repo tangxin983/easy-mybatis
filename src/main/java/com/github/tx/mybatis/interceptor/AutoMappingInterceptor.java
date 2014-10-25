@@ -2,12 +2,12 @@ package com.github.tx.mybatis.interceptor;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.ibatis.binding.MapperMethod.ParamMap;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.ResultFlag;
@@ -24,7 +24,7 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
-import com.github.tx.mybatis.mapper.BasicCrudTemplate;
+import com.github.tx.mybatis.mapper.CrudTemplate;
 import com.github.tx.mybatis.util.ReflectUtil;
 
 /**
@@ -39,35 +39,37 @@ import com.github.tx.mybatis.util.ReflectUtil;
 				ResultHandler.class }),
 		@Signature(type = Executor.class, method = "update", args = {
 				MappedStatement.class, Object.class }) })
-public class AutoMappingInterceptor extends BaseInterceptor implements Interceptor {
+public class AutoMappingInterceptor extends BaseInterceptor implements
+		Interceptor {
 
 	private static final String GENERATE_RESULTMAP_NAME = "GenerateResultMap";
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public Object intercept(Invocation invocation) throws Throwable {
-		final Object[] queryArgs = invocation.getArgs();
-		final MappedStatement ms = (MappedStatement) queryArgs[0];
-		final Object parameter = queryArgs[1];
-		String statementId = ms.getId();
-		String namespace = statementId.substring(0,
-				statementId.lastIndexOf("."));// mapper类名
-		Class<?> entityClazz = getEntityClass(ms);// 泛型实体类对象
-		if (ReflectUtil.isAutoMappper(ms) && entityClazz != null) {
+		Object[] queryArgs = invocation.getArgs();
+		MappedStatement ms = (MappedStatement) queryArgs[0];
+		Object parameter = queryArgs[1];
+		String msId = ms.getId();
+		String id = msId.substring(msId.lastIndexOf(".") + 1);// mapper方法名
+		String namespace = msId.substring(0, msId.lastIndexOf("."));// mapper类名
+		Class<?> entityClazz = ReflectUtil.getEntityClass(namespace);// 泛型实体类对象
+		if (ReflectUtil.isAutoMapping(namespace, id) && entityClazz != null) {
 			// 重写resultMaps属性
-			List<ResultMap> resultMaps = getResultMap(namespace, entityClazz, ms.getConfiguration());
+			List<ResultMap> resultMaps = getResultMap(namespace, entityClazz,
+					ms.getConfiguration());
 			MetaObject metaMappedStatement = getMetaObject(ms);
 			metaMappedStatement.setValue("resultMaps", resultMaps);
 			// 将泛型类加入到参数中供CrudTemplate使用
 			if (parameter != null) {
 				Map map;
 				if (parameter instanceof Map) {
-					map = (HashMap) parameter;
-					map.put(BasicCrudTemplate.CLASS_KEY, entityClazz);
+					map = (Map) parameter;
+					map.put(CrudTemplate.CLASS_KEY, entityClazz);
 				} else {
-					map = new HashMap();
-					map.put(BasicCrudTemplate.PARA_KEY, parameter);
-					map.put(BasicCrudTemplate.CLASS_KEY, entityClazz);
+					map = new ParamMap();
+					map.put(CrudTemplate.PARA_KEY, parameter);
+					map.put(CrudTemplate.CLASS_KEY, entityClazz);
 				}
 				queryArgs[1] = map;
 			} else {

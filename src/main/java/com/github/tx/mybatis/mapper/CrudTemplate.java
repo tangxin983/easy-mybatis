@@ -13,7 +13,7 @@ import com.github.tx.mybatis.util.ReflectUtil;
  * @since 2014年10月22日
  */
 
-public class BasicCrudTemplate {
+public class CrudTemplate {
 	
 	public static final String CLASS_KEY = "clazz";
 

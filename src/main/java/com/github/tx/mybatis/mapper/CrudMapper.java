@@ -12,18 +12,18 @@ import com.github.tx.mybatis.annotation.AutoResultMap;
 import com.github.tx.mybatis.entity.Page;
 
 /**
- * Mapper基类
+ * 增删改查Mapper基类
  * @author tangx
  * @since 2014年10月22日
  */
 
-public interface BasicCrud<T> {
+public interface CrudMapper<T> {
 	
 	/**
 	 * 查找所有记录
 	 * @return 
 	 */
-	@SelectProvider(type = BasicCrudTemplate.class, method = "select")
+	@SelectProvider(type = CrudTemplate.class, method = "select")
 	@AutoResultMap
 	public List<T> select();
 	
@@ -32,7 +32,7 @@ public interface BasicCrud<T> {
 	 * @param page
 	 * @return
 	 */
-	@SelectProvider(type = BasicCrudTemplate.class, method = "selectByPage")
+	@SelectProvider(type = CrudTemplate.class, method = "selectByPage")
 	@AutoResultMap
 	List<T> selectByPage(Page page);
 	
@@ -41,7 +41,7 @@ public interface BasicCrud<T> {
 	 * @param id
 	 * @return
 	 */
-	@SelectProvider(type = BasicCrudTemplate.class, method = "selectById")
+	@SelectProvider(type = CrudTemplate.class, method = "selectById")
 	@AutoResultMap
 	public T selectById(Serializable id);
 
@@ -49,28 +49,28 @@ public interface BasicCrud<T> {
 	 * 插入记录
 	 * @param t
 	 */
-	@InsertProvider(type = BasicCrudTemplate.class, method = "insert")
+	@InsertProvider(type = CrudTemplate.class, method = "insert")
 	public void insert(T t);
 
 	/**
 	 * 更新记录
 	 * @param t
 	 */
-	@UpdateProvider(type = BasicCrudTemplate.class, method = "update")
+	@UpdateProvider(type = CrudTemplate.class, method = "update")
 	public void update(T t);
 
 	/**
 	 * 删除记录
 	 * @param t
 	 */
-	@DeleteProvider(type = BasicCrudTemplate.class, method = "delete")
+	@DeleteProvider(type = CrudTemplate.class, method = "delete")
 	public void delete(T t);
 	
 	/**
 	 * 根据主键删除记录
 	 * @param id
 	 */
-	@DeleteProvider(type = BasicCrudTemplate.class, method = "deleteById")
+	@DeleteProvider(type = CrudTemplate.class, method = "deleteById")
 	@AutoResultMap
 	public void deleteById(Serializable id);
 }

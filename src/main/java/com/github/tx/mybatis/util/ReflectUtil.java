@@ -13,7 +13,6 @@ import javax.persistence.Table;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.apache.ibatis.mapping.MappedStatement;
 
 import com.github.tx.mybatis.annotation.AutoResultMap;
 
@@ -306,23 +305,35 @@ public class ReflectUtil {
 	 * @param ms
 	 * @return
 	 */
-	public static boolean isAutoMappper(MappedStatement ms) {
-		String statementId = ms.getId();
-		String id = statementId.substring(statementId.lastIndexOf(".") + 1);// mapper方法名
-		String namespace = statementId.substring(0, statementId.lastIndexOf("."));// mapper类名
+	public static boolean isAutoMapping(String className, String methodName) {
 		Class<?> mapperClass;
 		try {
-			mapperClass = Class.forName(namespace);
+			mapperClass = Class.forName(className);
 		} catch (ClassNotFoundException e) {
-			throw new RuntimeException("cant not find class:" + namespace);
+			throw new RuntimeException("cant not find class:" + className);
 		}
 		Method[] methods = mapperClass.getMethods();
 		for (Method method : methods) {
-			if(id.equals(method.getName()) && method.isAnnotationPresent(AutoResultMap.class)){
+			if(methodName.equals(method.getName()) && method.isAnnotationPresent(AutoResultMap.class)){
 				return true;
 			}
 		}
 		return false;
+	}
+	
+	/**
+	 * 获取mapper对应的实体类对象
+	 * @param mapperClassName
+	 * @return
+	 */
+	public static Class<?> getEntityClass(String mapperClassName) {
+		Class<?> entityClazz;
+		try {
+			entityClazz = ReflectUtil.getGenricType(Class.forName(mapperClassName));
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException("cant find entity class");
+		}
+		return entityClazz;
 	}
 
 
