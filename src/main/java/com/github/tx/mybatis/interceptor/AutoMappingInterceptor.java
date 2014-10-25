@@ -1,14 +1,14 @@
 package com.github.tx.mybatis.interceptor;
 
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.ibatis.executor.statement.StatementHandler;
+import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.ResultFlag;
 import org.apache.ibatis.mapping.ResultMap;
@@ -21,34 +21,57 @@ import org.apache.ibatis.plugin.Signature;
 import org.apache.ibatis.reflection.MetaClass;
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.session.Configuration;
+import org.apache.ibatis.session.ResultHandler;
+import org.apache.ibatis.session.RowBounds;
 
+import com.github.tx.mybatis.mapper.BasicCrudTemplate;
 import com.github.tx.mybatis.util.ReflectUtil;
 
 /**
- * 自动生成泛型resultMap
+ * 自动生成泛型resultMap，并将泛型类设置到参数中
+ * 
  * @author tangx
- * @since 2014年10月23日
+ * @since 2014年10月24日
  */
-@Intercepts({ @Signature(type = StatementHandler.class, method = "prepare", args = { Connection.class }) })
+@Intercepts({
+		@Signature(type = Executor.class, method = "query", args = {
+				MappedStatement.class, Object.class, RowBounds.class,
+				ResultHandler.class }),
+		@Signature(type = Executor.class, method = "update", args = {
+				MappedStatement.class, Object.class }) })
 public class AutoMappingInterceptor extends BaseInterceptor implements Interceptor {
 
 	private static final String GENERATE_RESULTMAP_NAME = "GenerateResultMap";
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public Object intercept(Invocation invocation) throws Throwable {
-		StatementHandler statementHandler = (StatementHandler) invocation.getTarget();
-		MetaObject metaStatementHandler = getMetaObject(statementHandler);
-		MappedStatement mappedStatement = (MappedStatement) metaStatementHandler.getValue("delegate.mappedStatement");
-		String statementId = mappedStatement.getId();
-		String namespace = statementId.substring(0, statementId.lastIndexOf("."));// mapper类名
-		if (ReflectUtil.isAutoMappper(mappedStatement)) {
-			Class<?> entityClazz = getEntityClass(mappedStatement);
-			if (entityClazz != null) {
-				// 重写resultMaps属性
-				List<ResultMap> resultMaps = getResultMap(namespace, entityClazz, 
-						mappedStatement.getConfiguration());
-				metaStatementHandler.setValue(
-						"delegate.mappedStatement.resultMaps", resultMaps);
+		final Object[] queryArgs = invocation.getArgs();
+		final MappedStatement ms = (MappedStatement) queryArgs[0];
+		final Object parameter = queryArgs[1];
+		String statementId = ms.getId();
+		String namespace = statementId.substring(0,
+				statementId.lastIndexOf("."));// mapper类名
+		Class<?> entityClazz = getEntityClass(ms);// 泛型实体类对象
+		if (ReflectUtil.isAutoMappper(ms) && entityClazz != null) {
+			// 重写resultMaps属性
+			List<ResultMap> resultMaps = getResultMap(namespace, entityClazz, ms.getConfiguration());
+			MetaObject metaMappedStatement = getMetaObject(ms);
+			metaMappedStatement.setValue("resultMaps", resultMaps);
+			// 将泛型类加入到参数中供CrudTemplate使用
+			if (parameter != null) {
+				Map map;
+				if (parameter instanceof Map) {
+					map = (HashMap) parameter;
+					map.put(BasicCrudTemplate.CLASS_KEY, entityClazz);
+				} else {
+					map = new HashMap();
+					map.put(BasicCrudTemplate.PARA_KEY, parameter);
+					map.put(BasicCrudTemplate.CLASS_KEY, entityClazz);
+				}
+				queryArgs[1] = map;
+			} else {
+				queryArgs[1] = entityClazz;
 			}
 		}
 		return invocation.proceed();
@@ -56,14 +79,17 @@ public class AutoMappingInterceptor extends BaseInterceptor implements Intercept
 
 	/**
 	 * 生成泛型对应的ResultMap
+	 * 
 	 * @param namespace
 	 * @param clazz
 	 * @param conf
 	 * @return
 	 */
-	private List<ResultMap> getResultMap(String namespace, Class<?> clazz, Configuration conf) {
+	private List<ResultMap> getResultMap(String namespace, Class<?> clazz,
+			Configuration conf) {
 		String dynamicResultMapId = namespace + "." + GENERATE_RESULTMAP_NAME;
-		ResultMap dynamicResultMap = buildResultMap(dynamicResultMapId, clazz, conf);
+		ResultMap dynamicResultMap = buildResultMap(dynamicResultMapId, clazz,
+				conf);
 		List<ResultMap> resultMaps = new ArrayList<ResultMap>();
 		resultMaps.add(dynamicResultMap);
 		return Collections.unmodifiableList(resultMaps);
@@ -156,7 +182,7 @@ public class AutoMappingInterceptor extends BaseInterceptor implements Intercept
 
 	@Override
 	public Object plugin(Object target) {
-		if (target instanceof StatementHandler) {
+		if (target instanceof Executor) {
 			return Plugin.wrap(target, this);
 		} else {
 			return target;

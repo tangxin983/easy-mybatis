@@ -84,9 +84,11 @@ public class CrudTest extends AbstractMybatisTest {
 		try {
 			BlogMapper mapper = session.getMapper(BlogMapper.class);
 			Page page = new Page();
-			page.setSize(2);
 			List<Blog> pageblog = mapper.selectByPage(page);
-			logger.info("selectByPage:{}", pageblog.size());
+			logger.info("selectByPage_1:{}", pageblog.size());
+			page.setCurrentPage(2);
+			pageblog = mapper.selectByPage(page);
+			logger.info("selectByPage_2:{}", pageblog.size());
 		} finally {
 			session.close();
 		}
