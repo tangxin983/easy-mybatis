@@ -6,6 +6,8 @@ import java.util.Random;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Test;
 
+import com.github.tx.mybatis.criteria.Criteria;
+import com.github.tx.mybatis.criteria.CriteriaQuery;
 import com.github.tx.mybatis.entity.Page;
 import com.github.tx.mybatis.test.entity.Blog;
 import com.github.tx.mybatis.test.mapper.BlogMapper;
@@ -66,7 +68,7 @@ public class CrudTest extends AbstractMybatisTest {
 		}
 	}
 
-//	 @Test
+	// @Test
 	public void deleteById() {
 		SqlSession session = sqlSessionFactory.openSession();
 		try {
@@ -78,7 +80,7 @@ public class CrudTest extends AbstractMybatisTest {
 		}
 	}
 
-	@Test
+	// @Test
 	public void selectByPage() {
 		SqlSession session = sqlSessionFactory.openSession();
 		try {
@@ -90,6 +92,21 @@ public class CrudTest extends AbstractMybatisTest {
 		} finally {
 			session.close();
 		}
+	}
+
+	@Test
+	public void criteria() {
+		SqlSession session = sqlSessionFactory.openSession();
+		try {
+			BlogMapper mapper = session.getMapper(BlogMapper.class);
+			CriteriaQuery query = new CriteriaQuery();
+			query.where(Criteria.newCriteria().eq("author", "nike"));
+			List<Blog> pageblog = mapper.query(query);
+			logger.info("selectByPage_2:{}", pageblog.size());
+		} finally {
+			session.close();
+		}
+
 	}
 
 }

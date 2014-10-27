@@ -24,7 +24,7 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
-import com.github.tx.mybatis.mapper.CrudTemplate;
+import com.github.tx.mybatis.util.Constants;
 import com.github.tx.mybatis.util.ReflectUtil;
 
 /**
@@ -65,11 +65,11 @@ public class AutoMappingInterceptor extends BaseInterceptor implements
 				Map map;
 				if (parameter instanceof Map) {
 					map = (Map) parameter;
-					map.put(CrudTemplate.CLASS_KEY, entityClazz);
+					map.put(Constants.CLASS_KEY, entityClazz);
 				} else {
 					map = new ParamMap();
-					map.put(CrudTemplate.PARA_KEY, parameter);
-					map.put(CrudTemplate.CLASS_KEY, entityClazz);
+					map.put(Constants.PARA_KEY, parameter);
+					map.put(Constants.CLASS_KEY, entityClazz);
 				}
 				queryArgs[1] = map;
 			} else {

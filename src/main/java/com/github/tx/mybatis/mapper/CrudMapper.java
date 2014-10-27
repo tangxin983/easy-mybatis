@@ -23,16 +23,16 @@ public interface CrudMapper<T> {
 	 * 查找所有记录
 	 * @return 
 	 */
-	@SelectProvider(type = CrudTemplate.class, method = "select")
+	@SelectProvider(type = SqlTemplate.class, method = "select")
 	@AutoResultMap
-	public List<T> select();
+	List<T> select();
 	
 	/**
 	 * 查找所有记录（分页）
 	 * @param page
 	 * @return
 	 */
-	@SelectProvider(type = CrudTemplate.class, method = "selectByPage")
+	@SelectProvider(type = SqlTemplate.class, method = "selectByPage")
 	@AutoResultMap
 	List<T> selectByPage(Page page);
 	
@@ -41,36 +41,36 @@ public interface CrudMapper<T> {
 	 * @param id
 	 * @return
 	 */
-	@SelectProvider(type = CrudTemplate.class, method = "selectById")
+	@SelectProvider(type = SqlTemplate.class, method = "selectById")
 	@AutoResultMap
-	public T selectById(Serializable id);
+	T selectById(Serializable id);
 
 	/**
 	 * 插入记录
 	 * @param t
 	 */
-	@InsertProvider(type = CrudTemplate.class, method = "insert")
-	public void insert(T t);
+	@InsertProvider(type = SqlTemplate.class, method = "insert")
+	void insert(T t);
 
 	/**
 	 * 更新记录
 	 * @param t
 	 */
-	@UpdateProvider(type = CrudTemplate.class, method = "update")
-	public void update(T t);
+	@UpdateProvider(type = SqlTemplate.class, method = "update")
+	void update(T t);
 
 	/**
 	 * 删除记录
 	 * @param t
 	 */
-	@DeleteProvider(type = CrudTemplate.class, method = "delete")
-	public void delete(T t);
+	@DeleteProvider(type = SqlTemplate.class, method = "delete")
+	void delete(T t);
 	
 	/**
 	 * 根据主键删除记录
 	 * @param id
 	 */
-	@DeleteProvider(type = CrudTemplate.class, method = "deleteById")
+	@DeleteProvider(type = SqlTemplate.class, method = "deleteById")
 	@AutoResultMap
-	public void deleteById(Serializable id);
+	void deleteById(Serializable id);
 }
