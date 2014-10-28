@@ -2,10 +2,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.tx</groupId>
-	<artifactId>mybatis-less-xml</artifactId>
+	<artifactId>easy-mybatis</artifactId>
 	<version>1.0.0</version>
-	<name>mybatis-less-xml</name>
-	<description>mybatis plugin for single table crud without xml</description>
+	<name>easy-mybatis</name>
+	<description>make mybatis much easy to use</description>
 	<licenses>
 		<license>
 			<name>The Apache Software License, Version 2.0</name>
@@ -14,9 +14,9 @@
 		</license>
 	</licenses>
 	<scm>
-		<connection>scm:git:git@github.com:tangxin983/mybatis-less-xml.git</connection>
-		<developerConnection>scm:git:git@github.com:tangxin983/mybatis-less-xml.git</developerConnection>
-		<url>git@github.com:tangxin983/mybatis-less-xml.git</url>
+		<connection>scm:git:git@github.com:tangxin983/easy-mybatis.git</connection>
+		<developerConnection>scm:git:git@github.com:tangxin983/easy-mybatis.git</developerConnection>
+		<url>git@github.com:tangxin983/easy-mybatis.git</url>
 	</scm>
 	<developers>
 		<developer>
