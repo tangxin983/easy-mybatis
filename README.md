@@ -12,10 +12,7 @@
 
 ```xml
 <plugins>
-		<plugin interceptor="com.github.tx.mybatis.interceptor.AutoMappingInterceptor" />
-		<!-- 以下插件用于物理分页,可以去除不影响单表crud -->
-		<plugin interceptor="com.github.tx.mybatis.interceptor.CacheKeyInterceptor" />
-		<plugin interceptor="com.github.tx.mybatis.interceptor.PageInterceptor" />
+	<plugin interceptor="com.github.tx.mybatis.interceptor.AutoMappingInterceptor" />
 </plugins>
 ```
 
