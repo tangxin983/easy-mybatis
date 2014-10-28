@@ -2,9 +2,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.tx</groupId>
-	<artifactId>mybatis-without-xml</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>mybatis-without-xml</name>
+	<artifactId>mybatis-less-xml</artifactId>
+	<version>1.0.0</version>
+	<name>mybatis-less-xml</name>
 	<description>mybatis plugin for single table crud without xml</description>
 	<licenses>
 		<license>
@@ -13,6 +13,11 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
+	<scm>
+		<connection>scm:git:git@github.com:tangxin983/mybatis-less-xml.git</connection>
+		<developerConnection>scm:git:git@github.com:tangxin983/mybatis-less-xml.git</developerConnection>
+		<url>git@github.com:tangxin983/mybatis-less-xml.git</url>
+	</scm>
 	<developers>
 		<developer>
 			<id>tangxin983</id>
@@ -24,9 +29,9 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<jdk.version>1.7</jdk.version>
 	</properties>
-	
+
 	<repositories>
-		<repository> 
+		<repository>
 			<id>nexus-osc</id>
 			<name>Nexus osc</name>
 			<url>http://maven.oschina.net/content/groups/public/</url>
@@ -40,9 +45,15 @@
 			<version>3.2.7</version>
 		</dependency>
 		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.5</version>
+		</dependency>
+		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 			<version>1.0.13</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
