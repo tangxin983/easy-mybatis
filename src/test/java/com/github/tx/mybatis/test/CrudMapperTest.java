@@ -1,6 +1,7 @@
 package com.github.tx.mybatis.test;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Assert;
@@ -159,5 +160,18 @@ public class CrudMapperTest extends AbstractMybatisTest {
 			session.close();
 		}
 	}
+	
+	@Test
+	public void testComplexSelect() {
+		SqlSession session = sqlSessionFactory.openSession();
+		try {
+			BlogMapper mapper = session.getMapper(BlogMapper.class);
+			List<Map> blogs = mapper.ComplexSelect();
+		} finally {
+			session.commit();
+			session.close();
+		}
+	}
+
 
 }

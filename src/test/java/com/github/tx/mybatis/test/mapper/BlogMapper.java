@@ -1,10 +1,8 @@
 package com.github.tx.mybatis.test.mapper;
 
 import java.util.List;
+import java.util.Map;
 
-import org.apache.ibatis.annotations.Select;
-
-import com.github.tx.mybatis.entity.Page;
 import com.github.tx.mybatis.mapper.CrudMapper;
 import com.github.tx.mybatis.test.entity.Blog;
 
@@ -16,6 +14,5 @@ import com.github.tx.mybatis.test.entity.Blog;
 
 public interface BlogMapper extends CrudMapper<Blog> {
   
-	@Select("select * from blog where id=#{param1}")
-	public List<Blog> selectByPageAndId(int id, Page page);
+	public List<Map> ComplexSelect();
 }
