@@ -40,15 +40,19 @@ public class Blog {
   //getter,setter...
 }
 ```
-#### 3、继承接口CrudMapper<T>，注意泛型T必须指定为第2步定义的实体类型
+#### 3、mapper或者说dao需继承CrudMapper<T>。
 
 ```java
 public interface BlogMapper extends CrudMapper<Blog> {
   
 }
 ```
+这里要注意：
+* 泛型需指定为第2步的实体类，表示CrudMapper中的方法只操作此实体对应的表。
+* 子类不能重载CrudMapper中的方法。根据mybatis规范，mapper接口中的方法名必须唯一。
+* 单表crud交给CrudMapper方法处理，子类只需关注复杂的join查询。复杂查询可以写在xml中（个人推荐）也可以用注解来写，这几种方式都是可以并存的。这里有个[例子](https://github.com/tangxin983/easy-mybatis/blob/master/src/test/java/com/github/tx/mybatis/test/mapper/BlogMapper.xml)
 
-#### 4、使用接口的crud方法，具体见[测试用例](https://github.com/tangxin983/easy-mybatis/blob/master/src/test/java/com/github/tx/mybatis/test/CrudMapperTest.java)
+#### 4、使用接口CrudMapper的方法，具体见[测试用例](https://github.com/tangxin983/easy-mybatis/blob/master/src/test/java/com/github/tx/mybatis/test/CrudMapperTest.java)
 
 
 
