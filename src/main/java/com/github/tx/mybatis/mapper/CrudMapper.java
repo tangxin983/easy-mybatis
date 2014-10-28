@@ -5,11 +5,14 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.DeleteProvider;
 import org.apache.ibatis.annotations.InsertProvider;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.SelectProvider;
 import org.apache.ibatis.annotations.UpdateProvider;
 
 import com.github.tx.mybatis.annotation.AutoResultMap;
+import com.github.tx.mybatis.criteria.CriteriaQuery;
 import com.github.tx.mybatis.entity.Page;
+import com.github.tx.mybatis.util.Constants;
 
 /**
  * 增删改查Mapper基类
@@ -35,6 +38,32 @@ public interface CrudMapper<T> {
 	@SelectProvider(type = SqlTemplate.class, method = "selectByPage")
 	@AutoResultMap
 	List<T> selectByPage(Page page);
+	
+	/**
+	 * 根据条件查找记录
+	 * 
+	 * @param query
+	 *            查询条件
+	 * @return
+	 */
+	@SelectProvider(type = SqlTemplate.class, method = "query")
+	@AutoResultMap
+	List<T> query(
+			@Param(value = Constants.CRITERIA_KEY) CriteriaQuery query);
+
+	/**
+	 * 根据条件查找记录（分页）
+	 * 
+	 * @param page
+	 *            分页信息
+	 * @param query
+	 *            查询条件
+	 * @return
+	 */
+	@SelectProvider(type = SqlTemplate.class, method = "query")
+	@AutoResultMap
+	List<T> queryByPage(Page page,
+			@Param(value = Constants.CRITERIA_KEY) CriteriaQuery query);
 	
 	/**
 	 * 根据主键查找记录
