@@ -1,5 +1,6 @@
 package com.github.tx.mybatis.test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -99,8 +100,17 @@ public class CrudTest extends AbstractMybatisTest {
 		SqlSession session = sqlSessionFactory.openSession();
 		try {
 			BlogMapper mapper = session.getMapper(BlogMapper.class);
+			List<Integer> values = new ArrayList<Integer>();
+			values.add(1);
+			values.add(4);
+			values.add(6);
 			CriteriaQuery query = new CriteriaQuery();
-			query.where(Criteria.newCriteria().eq("author", "nike"));
+			query.where(
+					Criteria.newCriteria().eq("author", "nike")
+							.between("id", 1, 5).in("id", values))
+					.asc(new String[] { "id" })
+					.desc(new String[] { "content", "author" })
+					.setDistinct(true).groupBy("id").groupBy("content");
 			List<Blog> pageblog = mapper.query(query);
 			logger.info("selectByPage_2:{}", pageblog.size());
 		} finally {

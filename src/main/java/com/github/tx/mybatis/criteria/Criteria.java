@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 
+ * 构建用and连接的条件
  * @author tangx
  * @since 2014年10月27日
  */
 
 public class Criteria {
-
+	
 	protected List<Criterion> criterions;
 	
 	private Criteria() {
@@ -56,62 +56,62 @@ public class Criteria {
 		return (Criteria) this;
 	}
 
-	public Criteria eq(String property, String value) {
+	public Criteria eq(String property, Object value) {
 		addCriterion(property + " = ", value);
 		return (Criteria) this;
 	}
 
-	public Criteria notEq(String property, String value) {
+	public Criteria notEq(String property, Object value) {
 		addCriterion(property + " <> ", value);
 		return (Criteria) this;
 	}
 
-	public Criteria gt(String property, String value) {
+	public Criteria gt(String property, Object value) {
 		addCriterion(property + " > ", value);
 		return (Criteria) this;
 	}
 
-	public Criteria ge(String property, String value) {
+	public Criteria ge(String property, Object value) {
 		addCriterion(property + " >= ", value);
 		return (Criteria) this;
 	}
 
-	public Criteria lt(String property, String value) {
+	public Criteria lt(String property, Object value) {
 		addCriterion(property + " < ", value);
 		return (Criteria) this;
 	}
 
-	public Criteria le(String property, String value) {
+	public Criteria le(String property, Object value) {
 		addCriterion(property + " <= ", value);
 		return (Criteria) this;
 	}
 
-	public Criteria like(String property, String value) {
+	public Criteria like(String property, Object value) {
 		addCriterion(property + " like ", value);
 		return (Criteria) this;
 	}
 
-	public Criteria notLike(String property, String value) {
+	public Criteria notLike(String property, Object value) {
 		addCriterion(property + " not like ", value);
 		return (Criteria) this;
 	}
 
-	public Criteria in(String property, List<String> values) {
+	public Criteria in(String property, List<?> values) {
 		addCriterion(property + " in ", values);
 		return (Criteria) this;
 	}
 
-	public Criteria notIn(String property, List<String> values) {
+	public Criteria notIn(String property, List<?> values) {
 		addCriterion(property + " not in ", values);
 		return (Criteria) this;
 	}
 
-	public Criteria between(String property, String value1, String value2) {
+	public Criteria between(String property, Object value1, Object value2) {
 		addCriterion(property + " between ", value1, value2);
 		return (Criteria) this;
 	}
 
-	public Criteria notBetween(String property, String value1, String value2) {
+	public Criteria notBetween(String property, Object value1, Object value2) {
 		addCriterion(property + " not between ", value1, value2);
 		return (Criteria) this;
 	}

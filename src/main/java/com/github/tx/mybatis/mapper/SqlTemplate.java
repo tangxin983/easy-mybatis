@@ -2,7 +2,9 @@ package com.github.tx.mybatis.mapper;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.jdbc.SQL;
 
 import com.github.tx.mybatis.criteria.Criteria;
@@ -76,26 +78,86 @@ public class SqlTemplate {
 				Class<?> clazz = (Class<?>) parameter.get(Constants.CLASS_KEY);
 				CriteriaQuery query = (CriteriaQuery) parameter
 						.get(Constants.CRITERIA_KEY);
-				SELECT("*");
+				if (query.isDistinct()) {
+					SELECT_DISTINCT("*");
+				} else {
+					SELECT("*");
+				}
 				FROM(ReflectUtil.getTableName(clazz));
-				List<Criteria> criterias = query.getOredCriteria();
+				List<Criteria> criterias = query.getCriterias();
 				int size = criterias.size();
+				int i = 0, j = 0;
 				for (Criteria criteria : criterias) {
+					j = 0;
 					for (Criterion criterion : criteria.getCriterions()) {
 						String condition = criterion.getCondition();
+						Object value = criterion.getValue();
+						Object secondValue = criterion.getSecondValue();
+						StringBuffer sb = new StringBuffer();
 						if (criterion.isNoValue()) {
 							WHERE(condition);
-						} else if (criterion.isSingleValue()) {
-							Object value = criterion.getValue();
-							WHERE(condition + value);
-						} else if (criterion.isBetweenValue()) {
-
-						} else if (criterion.isListValue()) {
-
+						} else if (criterion.isSingleValue() && value != null) {
+							sb.append("#{");
+							sb.append(Constants.CRITERIA_KEY + ".");
+							sb.append("criterias[" + i + "].");
+							sb.append("criterions[" + j + "].value");
+							sb.append("}");
+							WHERE(condition + sb.toString());
+						} else if (criterion.isBetweenValue() && value != null
+								&& secondValue != null) {
+							sb.append("#{");
+							sb.append(Constants.CRITERIA_KEY + ".");
+							sb.append("criterias[" + i + "].");
+							sb.append("criterions[" + j + "].value");
+							sb.append("}");
+							sb.append(" and #{");
+							sb.append(Constants.CRITERIA_KEY + ".");
+							sb.append("criterias[" + i + "].");
+							sb.append("criterions[" + j + "].secondValue");
+							sb.append("}");
+							WHERE(condition + sb.toString());
+						} else if (criterion.isListValue() && value != null) {
+							List<?> valueList = (List<?>) criterion.getValue();
+							if (valueList.size() > 0) {
+								sb.append("(");
+								for (int x = 0; x < valueList.size(); x++) {
+									sb.append("#{");
+									sb.append(Constants.CRITERIA_KEY + ".");
+									sb.append("criterias[" + i + "].");
+									sb.append("criterions[" + j + "].");
+									sb.append("value[" + x + "]");
+									sb.append("}");
+									if (x != valueList.size() - 1) {
+										sb.append(",");
+									}
+								}
+								sb.append(")");
+							}
+							WHERE(condition + sb.toString());
 						}
+						j++;
 					}
-					if(--size > 0){
+					if (--size > 0) {
 						OR();
+					}
+					i++;
+				}
+				Set<String> groupBys = query.getGroupByColumns();
+				for (String column : groupBys) {
+					if (StringUtils.isNotBlank(column)) {
+						GROUP_BY(column);
+					}
+				}
+				Set<String> ascs = query.getAscColumns();
+				for (String column : ascs) {
+					if (StringUtils.isNotBlank(column)) {
+						ORDER_BY(column + " asc");
+					}
+				}
+				Set<String> descs = query.getDescColumns();
+				for (String column : descs) {
+					if (StringUtils.isNotBlank(column)) {
+						ORDER_BY(column + " desc");
 					}
 				}
 			}
