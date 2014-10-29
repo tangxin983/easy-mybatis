@@ -80,9 +80,12 @@ where (id >= 1)
 ```xml
 <plugins>
 	<plugin interceptor="com.github.tx.mybatis.interceptor.CacheKeyInterceptor" />
-	<plugin interceptor="com.github.tx.mybatis.interceptor.PageInterceptor" />
+	<plugin interceptor="com.github.tx.mybatis.interceptor.PageInterceptor">
+		<property name="dialect" value="mysql"/>
+  </plugin>
 </plugins>
 ```
+目前dialect只支持mysql、oracle、hsqldb
 
 #### 2、使用
 
