@@ -7,9 +7,11 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.jdbc.SQL;
 
+import com.github.tx.mybatis.criteria.Condition;
 import com.github.tx.mybatis.criteria.Criteria;
 import com.github.tx.mybatis.criteria.Criteria.Criterion;
-import com.github.tx.mybatis.criteria.CriteriaQuery;
+import com.github.tx.mybatis.criteria.QueryCondition;
+import com.github.tx.mybatis.criteria.UpdateCondition;
 import com.github.tx.mybatis.util.Constants;
 import com.github.tx.mybatis.util.ReflectUtil;
 
@@ -43,10 +45,15 @@ public class SqlTemplate {
 	 * @param parameter
 	 * @return
 	 */
-	public String selectById(final Map<String, Object> parameter) {
+	public String selectByPrimaryKey(final Map<String, Object> parameter) {
+		final Class<?> clazz = (Class<?>) parameter.get(Constants.CLASS_KEY);
+		if (ReflectUtil.getIdFieldName(clazz) == null) {
+			throw new RuntimeException(
+					"selectByPrimaryKey error:cant find @Id annotation in "
+							+ clazz.getName());
+		}
 		return new SQL() {
 			{
-				Class<?> clazz = (Class<?>) parameter.get(Constants.CLASS_KEY);
 				SELECT("*");
 				FROM(ReflectUtil.getTableName(clazz));
 				WHERE(ReflectUtil.getIdColumnName(clazz) + " = #{"
@@ -67,150 +74,83 @@ public class SqlTemplate {
 	}
 
 	/**
+	 * 查询记录总数
+	 * 
+	 * @param clazz
+	 * @return
+	 */
+	public String count(final Class<?> clazz) {
+		return new SQL() {
+			{
+				SELECT("count(1)");
+				FROM(ReflectUtil.getTableName(clazz));
+			}
+		}.toString();
+	}
+
+	/**
 	 * 根据条件查询记录
 	 * 
 	 * @param parameter
 	 * @return
 	 */
 	public String query(final Map<String, Object> parameter) {
-		return new SQL() {
-			{
-				Class<?> clazz = (Class<?>) parameter.get(Constants.CLASS_KEY);
-				CriteriaQuery query = (CriteriaQuery) parameter
-						.get(Constants.CRITERIA_KEY);
-				if (query.isDistinct()) {
-					SELECT_DISTINCT("*");
-				} else {
-					SELECT("*");
-				}
-				FROM(ReflectUtil.getTableName(clazz));
-				List<Criteria> criterias = query.getCriterias();
-				int size = criterias.size();
-				int i = 0, j = 0;
-				for (Criteria criteria : criterias) {
-					j = 0;
-					for (Criterion criterion : criteria.getCriterions()) {
-						String condition = criterion.getCondition();
-						Object value = criterion.getValue();
-						Object secondValue = criterion.getSecondValue();
-						StringBuffer sb = new StringBuffer();
-						if (criterion.isNoValue()) {
-							WHERE(condition);
-						} else if (criterion.isSingleValue() && value != null) {
-							sb.append("#{");
-							sb.append(Constants.CRITERIA_KEY + ".");
-							sb.append("criterias[" + i + "].");
-							sb.append("criterions[" + j + "].value");
-							sb.append("}");
-							WHERE(condition + sb.toString());
-						} else if (criterion.isBetweenValue() && value != null
-								&& secondValue != null) {
-							sb.append("#{");
-							sb.append(Constants.CRITERIA_KEY + ".");
-							sb.append("criterias[" + i + "].");
-							sb.append("criterions[" + j + "].value");
-							sb.append("}");
-							sb.append(" and #{");
-							sb.append(Constants.CRITERIA_KEY + ".");
-							sb.append("criterias[" + i + "].");
-							sb.append("criterions[" + j + "].secondValue");
-							sb.append("}");
-							WHERE(condition + sb.toString());
-						} else if (criterion.isListValue() && value != null) {
-							List<?> valueList = (List<?>) criterion.getValue();
-							if (valueList.size() > 0) {
-								sb.append("(");
-								for (int x = 0; x < valueList.size(); x++) {
-									sb.append("#{");
-									sb.append(Constants.CRITERIA_KEY + ".");
-									sb.append("criterias[" + i + "].");
-									sb.append("criterions[" + j + "].");
-									sb.append("value[" + x + "]");
-									sb.append("}");
-									if (x != valueList.size() - 1) {
-										sb.append(",");
-									}
-								}
-								sb.append(")");
-							}
-							WHERE(condition + sb.toString());
-						}
-						j++;
-					}
-					if (--size > 0) {
-						OR();
-					}
-					i++;
-				}
-				Set<String> groupBys = query.getGroupByColumns();
-				for (String column : groupBys) {
-					if (StringUtils.isNotBlank(column)) {
-						GROUP_BY(column);
-					}
-				}
-				Set<String> ascs = query.getAscColumns();
-				for (String column : ascs) {
-					if (StringUtils.isNotBlank(column)) {
-						ORDER_BY(column + " asc");
-					}
-				}
-				Set<String> descs = query.getDescColumns();
-				for (String column : descs) {
-					if (StringUtils.isNotBlank(column)) {
-						ORDER_BY(column + " desc");
-					}
-				}
-			}
-		}.toString();
+		Class<?> clazz = (Class<?>) parameter.get(Constants.CLASS_KEY);
+		QueryCondition query = (QueryCondition) parameter.get(Constants.CRITERIA_KEY);
+		SQL sql = new SQL();
+		if (query.isDistinct()) {
+			sql.SELECT_DISTINCT("*");
+		} else {
+			sql.SELECT("*");
+		}
+		sql.FROM(ReflectUtil.getTableName(clazz));
+		return where(sql, query);
 	}
 
 	/**
-	 * 插入
+	 * 插入记录
 	 * 
 	 * @param t
 	 * @return
 	 */
 	public String insert(final Object t) {
+		final Class<?> clazz = t.getClass();
 		return new SQL() {
 			{
-				INSERT_INTO(ReflectUtil.getTableName(t.getClass()));
-				VALUES(ReflectUtil.getIdColumnName(t.getClass()) + ","
-						+ ReflectUtil.insertColumnNameList(t), "#{"
-						+ ReflectUtil.getIdFieldName(t.getClass()) + "},"
-						+ ReflectUtil.insertFieldNameList(t));
+				if (ReflectUtil.getIdFieldName(clazz) != null) {
+					INSERT_INTO(ReflectUtil.getTableName(clazz));
+					VALUES(ReflectUtil.getIdColumnName(clazz) + ","
+							+ ReflectUtil.insertColumnNameList(t), "#{"
+							+ ReflectUtil.getIdFieldName(clazz) + "},"
+							+ ReflectUtil.insertFieldNameList(t));
+				} else {
+					INSERT_INTO(ReflectUtil.getTableName(clazz));
+					VALUES(ReflectUtil.insertColumnNameList(t),
+							ReflectUtil.insertFieldNameList(t));
+				}
 			}
 		}.toString();
 	}
 
 	/**
-	 * 更新
+	 * 根据主键更新记录
 	 * 
 	 * @param t
 	 * @return
 	 */
-	public String update(final Object t) {
+	public String updateByPrimaryKey(final Object t) {
+		final Class<?> clazz = t.getClass();
+		if (ReflectUtil.getIdFieldName(clazz) == null) {
+			throw new RuntimeException(
+					"updateByPrimaryKey error:cant find @Id annotation in "
+							+ clazz.getName());
+		}
 		return new SQL() {
 			{
-				UPDATE(ReflectUtil.getTableName(t.getClass()));
-				SET(ReflectUtil.getUpdateSQL(t));
-				WHERE(ReflectUtil.getIdColumnName(t.getClass()) + " = #{"
-						+ ReflectUtil.getIdFieldName(t.getClass()) + "}");
-			}
-		}.toString();
-	}
-
-	/**
-	 * 删除
-	 * 
-	 * @param t
-	 * @return
-	 */
-	public String delete(final Object t) {
-		return new SQL() {
-			{
-				DELETE_FROM(ReflectUtil.getTableName(t.getClass()));
-				WHERE(ReflectUtil.getIdColumnName(t.getClass()) + " = #{"
-						+ ReflectUtil.getIdFieldName(t.getClass()) + "}");
+				UPDATE(ReflectUtil.getTableName(clazz));
+				SET(ReflectUtil.getUpdateSQL(t, false));
+				WHERE(ReflectUtil.getIdColumnName(clazz) + " = #{"
+						+ ReflectUtil.getIdFieldName(clazz) + "}");
 			}
 		}.toString();
 	}
@@ -218,17 +158,140 @@ public class SqlTemplate {
 	/**
 	 * 根据主键删除记录
 	 * 
-	 * @param t
+	 * @param parameter
 	 * @return
 	 */
-	public String deleteById(final Map<String, Object> parameter) {
+	public String deleteByPrimaryKey(final Map<String, Object> parameter) {
+		final Class<?> clazz = (Class<?>) parameter.get(Constants.CLASS_KEY);
+		if (ReflectUtil.getIdFieldName(clazz) == null) {
+			throw new RuntimeException(
+					"deleteByPrimaryKey error:cant find @Id annotation in "
+							+ clazz.getName());
+		}
 		return new SQL() {
 			{
-				Class<?> clazz = (Class<?>) parameter.get(Constants.CLASS_KEY);
 				DELETE_FROM(ReflectUtil.getTableName(clazz));
 				WHERE(ReflectUtil.getIdColumnName(clazz) + " = #{"
 						+ Constants.PARA_KEY + "}");
 			}
 		}.toString();
+	}
+
+	/**
+	 * 根据条件更新记录
+	 * 
+	 * @param parameter
+	 * @return
+	 */
+	public String updateByCondition(final Map<String, Object> parameter) {
+		UpdateCondition query = (UpdateCondition) parameter.get(Constants.CRITERIA_KEY);
+		Object t = (Object) parameter.get(Constants.ENTITY_KEY);
+		Class<?> clazz = (Class<?>) t.getClass();
+		SQL sql = new SQL().UPDATE(ReflectUtil.getTableName(clazz)).SET(
+				ReflectUtil.getUpdateSQL(t, true));
+		return where(sql, query);
+	}
+
+	/**
+	 * 根据条件删除记录
+	 * 
+	 * @param parameter
+	 * @return
+	 */
+	public String deleteByCondition(final Map<String, Object> parameter) {
+		Class<?> clazz = (Class<?>) parameter.get(Constants.CLASS_KEY);
+		UpdateCondition query = (UpdateCondition) parameter.get(Constants.CRITERIA_KEY);
+		SQL sql = new SQL().DELETE_FROM(ReflectUtil.getTableName(clazz));
+		return where(sql, query);
+	}
+
+	/**
+	 * 查询或更新条件
+	 * 
+	 * @param sql
+	 * @param query
+	 * @return
+	 */
+	private String where(SQL sql, Condition query) {
+		List<Criteria> criterias = query.getCriterias();
+		int size = criterias.size();
+		int i = 0, j = 0;
+		for (Criteria criteria : criterias) {
+			j = 0;
+			for (Criterion criterion : criteria.getCriterions()) {
+				String condition = criterion.getCondition();
+				Object value = criterion.getValue();
+				Object secondValue = criterion.getSecondValue();
+				StringBuffer sb = new StringBuffer();
+				if (criterion.isNoValue()) {
+					sql.WHERE(condition);
+				} else if (criterion.isSingleValue() && value != null) {
+					sb.append("#{");
+					sb.append(Constants.CRITERIA_KEY + ".");
+					sb.append("criterias[" + i + "].");
+					sb.append("criterions[" + j + "].value");
+					sb.append("}");
+					sql.WHERE(condition + sb.toString());
+				} else if (criterion.isBetweenValue() && value != null
+						&& secondValue != null) {
+					sb.append("#{");
+					sb.append(Constants.CRITERIA_KEY + ".");
+					sb.append("criterias[" + i + "].");
+					sb.append("criterions[" + j + "].value");
+					sb.append("}");
+					sb.append(" and #{");
+					sb.append(Constants.CRITERIA_KEY + ".");
+					sb.append("criterias[" + i + "].");
+					sb.append("criterions[" + j + "].secondValue");
+					sb.append("}");
+					sql.WHERE(condition + sb.toString());
+				} else if (criterion.isListValue() && value != null) {
+					List<?> valueList = (List<?>) criterion.getValue();
+					if (valueList.size() > 0) {
+						sb.append("(");
+						for (int x = 0; x < valueList.size(); x++) {
+							sb.append("#{");
+							sb.append(Constants.CRITERIA_KEY + ".");
+							sb.append("criterias[" + i + "].");
+							sb.append("criterions[" + j + "].");
+							sb.append("value[" + x + "]");
+							sb.append("}");
+							if (x != valueList.size() - 1) {
+								sb.append(",");
+							}
+						}
+						sb.append(")");
+					}
+					sql.WHERE(condition + sb.toString());
+				}
+				j++;
+			}
+			if (--size > 0) {
+				sql.OR();
+			}
+			i++;
+		}
+		if (query instanceof QueryCondition) {
+			QueryCondition queryCondition = (QueryCondition) query;
+			Set<String> groupBys = queryCondition.getGroupByColumns();
+			for (String column : groupBys) {
+				if (StringUtils.isNotBlank(column)) {
+					sql.GROUP_BY(column);
+				}
+			}
+			Set<String> ascs = queryCondition.getAscColumns();
+			for (String column : ascs) {
+				if (StringUtils.isNotBlank(column)) {
+					sql.ORDER_BY(column + " asc");
+				}
+			}
+			Set<String> descs = queryCondition.getDescColumns();
+			for (String column : descs) {
+				if (StringUtils.isNotBlank(column)) {
+					sql.ORDER_BY(column + " desc");
+				}
+			}
+		}
+		return sql.toString();
 	}
 }

@@ -1,5 +1,6 @@
 package com.github.tx.mybatis.interceptor;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -54,12 +55,8 @@ public class AutoMappingInterceptor extends BaseInterceptor implements
 		String id = msId.substring(msId.lastIndexOf(".") + 1);// mapper方法名
 		String namespace = msId.substring(0, msId.lastIndexOf("."));// mapper类名
 		Class<?> entityClazz = ReflectUtil.getEntityClass(namespace);// 泛型实体类对象
-		if (ReflectUtil.isAutoMapping(namespace, id) && entityClazz != null) {
-			// 重写resultMaps属性
-			List<ResultMap> resultMaps = getResultMap(namespace, entityClazz,
-					ms.getConfiguration());
-			MetaObject metaMappedStatement = getMetaObject(ms);
-			metaMappedStatement.setValue("resultMaps", resultMaps);
+		Method mapperMethod = ReflectUtil.getMapperMethod(namespace, id);
+		if (ReflectUtil.isAutoMapping(mapperMethod) && entityClazz != null) {
 			// 将泛型类加入到参数中供CrudTemplate使用
 			if (parameter != null) {
 				Map map;
@@ -74,6 +71,13 @@ public class AutoMappingInterceptor extends BaseInterceptor implements
 				queryArgs[1] = map;
 			} else {
 				queryArgs[1] = entityClazz;
+			}
+			if (ReflectUtil.isGenerateResultMap(mapperMethod)) {
+				// 自动生成resultMap
+				List<ResultMap> resultMaps = getResultMap(namespace, entityClazz,
+						ms.getConfiguration());
+				MetaObject metaMappedStatement = getMetaObject(ms);
+				metaMappedStatement.setValue("resultMaps", resultMaps);
 			}
 		}
 		return invocation.proceed();
@@ -113,13 +117,15 @@ public class AutoMappingInterceptor extends BaseInterceptor implements
 		}
 		List<ResultMapping> resultMappings = new ArrayList<ResultMapping>();
 		// 处理id列
-		Class<?> idType = resolveResultJavaType(clazz,
-				ReflectUtil.getIdFieldName(clazz), null);
-		List<ResultFlag> flags = new ArrayList<ResultFlag>();
-		flags.add(ResultFlag.ID);
-		resultMappings.add(buildResultMapping(configuration,
-				ReflectUtil.getIdFieldName(clazz),
-				ReflectUtil.getIdColumnName(clazz), idType, flags));
+		if (ReflectUtil.getIdFieldName(clazz) != null) {
+			Class<?> idType = resolveResultJavaType(clazz,
+					ReflectUtil.getIdFieldName(clazz), null);
+			List<ResultFlag> flags = new ArrayList<ResultFlag>();
+			flags.add(ResultFlag.ID);
+			resultMappings.add(buildResultMapping(configuration,
+					ReflectUtil.getIdFieldName(clazz),
+					ReflectUtil.getIdColumnName(clazz), idType, flags));
+		}
 		// 处理普通列
 		Map<String, String> map = ReflectUtil.getFieldColumnMapping(clazz);
 		for (String key : map.keySet()) {

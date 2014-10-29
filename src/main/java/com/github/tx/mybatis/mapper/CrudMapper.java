@@ -9,36 +9,59 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.SelectProvider;
 import org.apache.ibatis.annotations.UpdateProvider;
 
-import com.github.tx.mybatis.annotation.AutoResultMap;
-import com.github.tx.mybatis.criteria.CriteriaQuery;
+import com.github.tx.mybatis.annotation.AutoMapping;
+import com.github.tx.mybatis.criteria.QueryCondition;
+import com.github.tx.mybatis.criteria.UpdateCondition;
 import com.github.tx.mybatis.entity.Page;
 import com.github.tx.mybatis.util.Constants;
 
 /**
  * 增删改查Mapper基类
+ * 
  * @author tangx
  * @since 2014年10月22日
  */
 
 public interface CrudMapper<T> {
-	
+
 	/**
 	 * 查找所有记录
-	 * @return 
+	 * 
+	 * @return
 	 */
 	@SelectProvider(type = SqlTemplate.class, method = "select")
-	@AutoResultMap
+	@AutoMapping
 	List<T> select();
-	
+
 	/**
 	 * 查找所有记录（分页）
+	 * 
 	 * @param page
 	 * @return
 	 */
 	@SelectProvider(type = SqlTemplate.class, method = "selectByPage")
-	@AutoResultMap
+	@AutoMapping
 	List<T> selectByPage(Page page);
-	
+
+	/**
+	 * 根据主键查找记录
+	 * 
+	 * @param id
+	 * @return
+	 */
+	@SelectProvider(type = SqlTemplate.class, method = "selectByPrimaryKey")
+	@AutoMapping
+	T selectByPrimaryKey(Serializable id);
+
+	/**
+	 * 查询记录总数
+	 * 
+	 * @return
+	 */
+	@SelectProvider(type = SqlTemplate.class, method = "count")
+	@AutoMapping
+	int count();
+
 	/**
 	 * 根据条件查找记录
 	 * 
@@ -47,9 +70,9 @@ public interface CrudMapper<T> {
 	 * @return
 	 */
 	@SelectProvider(type = SqlTemplate.class, method = "query")
-	@AutoResultMap
+	@AutoMapping
 	List<T> query(
-			@Param(value = Constants.CRITERIA_KEY) CriteriaQuery query);
+			@Param(value = Constants.CRITERIA_KEY) QueryCondition condition);
 
 	/**
 	 * 根据条件查找记录（分页）
@@ -61,45 +84,50 @@ public interface CrudMapper<T> {
 	 * @return
 	 */
 	@SelectProvider(type = SqlTemplate.class, method = "query")
-	@AutoResultMap
+	@AutoMapping
 	List<T> queryByPage(Page page,
-			@Param(value = Constants.CRITERIA_KEY) CriteriaQuery query);
-	
-	/**
-	 * 根据主键查找记录
-	 * @param id
-	 * @return
-	 */
-	@SelectProvider(type = SqlTemplate.class, method = "selectById")
-	@AutoResultMap
-	T selectById(Serializable id);
+			@Param(value = Constants.CRITERIA_KEY) QueryCondition condition);
 
 	/**
 	 * 插入记录
+	 * 
 	 * @param t
 	 */
 	@InsertProvider(type = SqlTemplate.class, method = "insert")
 	void insert(T t);
 
 	/**
-	 * 更新记录
+	 * 根据主键更新记录
+	 * 
 	 * @param t
 	 */
-	@UpdateProvider(type = SqlTemplate.class, method = "update")
-	void update(T t);
+	@UpdateProvider(type = SqlTemplate.class, method = "updateByPrimaryKey")
+	void updateByPrimaryKey(T t);
 
 	/**
-	 * 删除记录
+	 * 根据条件更新记录
+	 * 
 	 * @param t
 	 */
-	@DeleteProvider(type = SqlTemplate.class, method = "delete")
-	void delete(T t);
-	
+	@UpdateProvider(type = SqlTemplate.class, method = "updateByCondition")
+	void updateByCondition(@Param(value = Constants.ENTITY_KEY) T t,
+			@Param(value = Constants.CRITERIA_KEY) UpdateCondition condition);
+
 	/**
 	 * 根据主键删除记录
+	 * 
 	 * @param id
 	 */
-	@DeleteProvider(type = SqlTemplate.class, method = "deleteById")
-	@AutoResultMap
-	void deleteById(Serializable id);
+	@DeleteProvider(type = SqlTemplate.class, method = "deleteByPrimaryKey")
+	@AutoMapping
+	void deleteByPrimaryKey(Serializable id);
+
+	/**
+	 * 根据条件删除记录
+	 * 
+	 * @param t
+	 */
+	@UpdateProvider(type = SqlTemplate.class, method = "deleteByCondition")
+	@AutoMapping
+	void deleteByCondition(@Param(value = Constants.CRITERIA_KEY) UpdateCondition condition);
 }

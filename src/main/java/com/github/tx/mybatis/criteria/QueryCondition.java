@@ -1,20 +1,17 @@
 package com.github.tx.mybatis.criteria;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
+ * 查询条件
  * 
  * @author tangx
- * @since 2014年10月27日
+ * @since 2014年10月29日
  */
 
-public class CriteriaQuery {
-
-	protected List<Criteria> criterias;
+public class QueryCondition extends Condition {
 
 	protected Set<String> descColumns;
 
@@ -24,50 +21,47 @@ public class CriteriaQuery {
 
 	protected boolean distinct;
 
-	public CriteriaQuery() {
-		criterias = new ArrayList<Criteria>();
+	public QueryCondition() {
+		super();
 		descColumns = new HashSet<String>();
 		ascColumns = new HashSet<String>();
 		groupByColumns = new HashSet<String>();
 	}
-
-	public List<Criteria> getCriterias() {
-		return criterias;
-	}
-
-	public CriteriaQuery or(Criteria criteria) {
+	
+	@Override
+	public QueryCondition or(Criteria criteria) {
 		criterias.add(criteria);
-		return (CriteriaQuery) this;
+		return (QueryCondition) this;
 	}
 
-	public CriteriaQuery desc(String column) {
+	public QueryCondition desc(String column) {
 		descColumns.add(column);
-		return (CriteriaQuery) this;
+		return (QueryCondition) this;
 	}
 
-	public CriteriaQuery asc(String column) {
+	public QueryCondition asc(String column) {
 		ascColumns.add(column);
-		return (CriteriaQuery) this;
+		return (QueryCondition) this;
 	}
 
-	public CriteriaQuery groupBy(String column) {
+	public QueryCondition groupBy(String column) {
 		groupByColumns.add(column);
-		return (CriteriaQuery) this;
+		return (QueryCondition) this;
 	}
 
-	public CriteriaQuery desc(String[] columns) {
+	public QueryCondition desc(String[] columns) {
 		descColumns.addAll(Arrays.asList(columns));
-		return (CriteriaQuery) this;
+		return (QueryCondition) this;
 	}
 
-	public CriteriaQuery asc(String[] columns) {
+	public QueryCondition asc(String[] columns) {
 		ascColumns.addAll(Arrays.asList(columns));
-		return (CriteriaQuery) this;
+		return (QueryCondition) this;
 	}
 
-	public CriteriaQuery groupBy(String[] columns) {
+	public QueryCondition groupBy(String[] columns) {
 		groupByColumns.addAll(Arrays.asList(columns));
-		return (CriteriaQuery) this;
+		return (QueryCondition) this;
 	}
 
 	public Set<String> getDescColumns() {
@@ -86,13 +80,14 @@ public class CriteriaQuery {
 		return distinct;
 	}
 
-	public CriteriaQuery setDistinct(boolean distinct) {
+	public QueryCondition setDistinct(boolean distinct) {
 		this.distinct = distinct;
-		return (CriteriaQuery) this;
+		return (QueryCondition) this;
 	}
 
+	@Override
 	public void clear() {
-		criterias.clear();
+		super.clear();
 		descColumns.clear();
 		ascColumns.clear();
 		distinct = false;

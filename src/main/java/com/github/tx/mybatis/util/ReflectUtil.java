@@ -15,10 +15,11 @@ import javax.persistence.Table;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
-import com.github.tx.mybatis.annotation.AutoResultMap;
+import com.github.tx.mybatis.annotation.AutoMapping;
 
 /**
  * 反射工具类
+ * 
  * @author tangx
  * @since 2014年10月22日
  */
@@ -60,10 +61,11 @@ public class ReflectUtil {
 				return field.getName();
 		}
 		// 没有找到id，向上找父类的id
-		if (clazz.getSuperclass() != null && clazz.getSuperclass() != Object.class) {
+		if (clazz.getSuperclass() != null
+				&& clazz.getSuperclass() != Object.class) {
 			return getParentIdFieldName(clazz.getSuperclass());
 		} else {
-			throw new RuntimeException("cant find @Id annotation");
+			return null;
 		}
 	}
 
@@ -79,10 +81,11 @@ public class ReflectUtil {
 				return field.getName();
 		}
 		// 继续向上找父类id
-		if (clazz.getSuperclass() != null && clazz.getSuperclass() != Object.class) {
+		if (clazz.getSuperclass() != null
+				&& clazz.getSuperclass() != Object.class) {
 			return getParentIdFieldName(clazz.getSuperclass());
 		} else {
-			throw new RuntimeException("cant find @Id annotation");
+			return null;
 		}
 	}
 
@@ -100,14 +103,16 @@ public class ReflectUtil {
 					if (StringUtils.isNotBlank(c.name())) {
 						return c.name();
 					}
+				} else {
+					return field.getName();
 				}
-				return field.getName();
 			}
 		}
-		if (clazz.getSuperclass() != null && clazz.getSuperclass() != Object.class) {
+		if (clazz.getSuperclass() != null
+				&& clazz.getSuperclass() != Object.class) {
 			return getParentIdColumnName(clazz.getSuperclass());
 		} else {
-			throw new RuntimeException("cant find @Id annotation");
+			return null;
 		}
 	}
 
@@ -129,10 +134,11 @@ public class ReflectUtil {
 				return field.getName();
 			}
 		}
-		if (clazz.getSuperclass() != null && clazz.getSuperclass() != Object.class) {
+		if (clazz.getSuperclass() != null
+				&& clazz.getSuperclass() != Object.class) {
 			return getParentIdColumnName(clazz.getSuperclass());
 		} else {
-			throw new RuntimeException("cant find @Id annotation");
+			return null;
 		}
 	}
 
@@ -154,7 +160,8 @@ public class ReflectUtil {
 			}
 		}
 		// 获取父类属性
-		if (clazz.getSuperclass() != null && clazz.getSuperclass() != Object.class) {
+		if (clazz.getSuperclass() != null
+				&& clazz.getSuperclass() != Object.class) {
 			fields = clazz.getSuperclass().getDeclaredFields();
 			for (Field field : fields) {
 				if (field.isAnnotationPresent(Column.class)) {
@@ -167,9 +174,10 @@ public class ReflectUtil {
 		}
 		field2ColumnMap.put(clazz, columnDefs);
 	}
-	
+
 	/**
-	 * 根据类获取对应的属性名-列名关系
+	 * 获取类对应的属性名-列名关系
+	 * 
 	 * @param clazz
 	 * @param fieldName
 	 * @return
@@ -196,11 +204,11 @@ public class ReflectUtil {
 
 	/**
 	 * 获取更新语句的SQL(忽略空值)
-	 * 
 	 * @param obj
+	 * @param isNested 是否嵌套
 	 * @return
 	 */
-	public static String getUpdateSQL(Object obj) {
+	public static String getUpdateSQL(Object obj, boolean isNested) {
 		setFieldColumnMapping(obj.getClass());
 		StringBuilder sb = new StringBuilder();
 		Map<String, String> field2Column = field2ColumnMap.get(obj.getClass());
@@ -212,8 +220,13 @@ public class ReflectUtil {
 			if (i++ != 0) {
 				sb.append(',');
 			}
-			sb.append(field2Column.get(fieldName)).append("=#{")
-					.append(fieldName).append('}');
+			if(isNested){
+				sb.append(field2Column.get(fieldName)).append("=#{")
+				.append(Constants.ENTITY_KEY + ".").append(fieldName).append('}');
+			}else{
+				sb.append(field2Column.get(fieldName)).append("=#{")
+				.append(fieldName).append('}');
+			}
 		}
 		return sb.toString();
 	}
@@ -263,7 +276,7 @@ public class ReflectUtil {
 		}
 		return sb.toString();
 	}
-	
+
 	/**
 	 * 获得mapper接口定义中声明的第一个泛型参数的类型(泛型须定义在父接口),如无法找到返回null
 	 * 
@@ -277,6 +290,7 @@ public class ReflectUtil {
 
 	/**
 	 * 获得mapper接口定义中声明的泛型参数的类型(泛型须定义在父接口),如无法找到返回null
+	 * 
 	 * @param clazz
 	 * @param index
 	 * @return
@@ -284,7 +298,7 @@ public class ReflectUtil {
 	@SuppressWarnings("rawtypes")
 	public static Class getGenricType(final Class clazz, final int index) {
 		Type[] genTypes = clazz.getGenericInterfaces();
-		if(genTypes.length == 0){
+		if (genTypes.length == 0) {
 			return null;
 		}
 		Type type = genTypes[0];
@@ -300,13 +314,15 @@ public class ReflectUtil {
 		}
 		return (Class) params[index];
 	}
-	
+
 	/**
-	 * 判断是否需要自动生成resultMap
-	 * @param ms
+	 * 根据mapper类名和方法名获取Method对象
+	 * 
+	 * @param className
+	 * @param methodName
 	 * @return
 	 */
-	public static boolean isAutoMapping(String className, String methodName) {
+	public static Method getMapperMethod(String className, String methodName) {
 		Class<?> mapperClass;
 		try {
 			mapperClass = Class.forName(className);
@@ -315,28 +331,58 @@ public class ReflectUtil {
 		}
 		Method[] methods = mapperClass.getMethods();
 		for (Method method : methods) {
-			if(methodName.equals(method.getName()) && method.isAnnotationPresent(AutoResultMap.class)){
-				return true;
+			if (methodName.equals(method.getName())) {
+				return method;
 			}
 		}
-		return false;
+		return null;
 	}
-	
+
+	/**
+	 * 判断方法是否被AutoMapping注解
+	 * 
+	 * @param ms
+	 * @return
+	 */
+	public static boolean isAutoMapping(Method method) {
+		if (method.isAnnotationPresent(AutoMapping.class)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * 判断是否需要生成resultMap
+	 * 
+	 * @param className
+	 * @param methodName
+	 * @return
+	 */
+	public static boolean isGenerateResultMap(Method method) {
+		if (method.getReturnType().isPrimitive()) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
 	/**
 	 * 获取mapper对应的实体类对象
+	 * 
 	 * @param mapperClassName
 	 * @return
 	 */
 	public static Class<?> getEntityClass(String mapperClassName) {
 		Class<?> entityClazz;
 		try {
-			entityClazz = ReflectUtil.getGenricType(Class.forName(mapperClassName));
+			entityClazz = ReflectUtil.getGenricType(Class
+					.forName(mapperClassName));
 		} catch (ClassNotFoundException e) {
 			throw new RuntimeException("cant find entity class");
 		}
 		return entityClazz;
 	}
-
 
 	/**
 	 * 判断字段值是否为空

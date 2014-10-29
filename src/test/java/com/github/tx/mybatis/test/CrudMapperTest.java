@@ -8,7 +8,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.github.tx.mybatis.criteria.Criteria;
-import com.github.tx.mybatis.criteria.CriteriaQuery;
+import com.github.tx.mybatis.criteria.QueryCondition;
 import com.github.tx.mybatis.entity.Page;
 import com.github.tx.mybatis.test.entity.Blog;
 import com.github.tx.mybatis.test.mapper.BlogMapper;
@@ -75,7 +75,7 @@ public class CrudMapperTest extends AbstractMybatisTest {
 		SqlSession session = sqlSessionFactory.openSession();
 		try {
 			BlogMapper mapper = session.getMapper(BlogMapper.class);
-			CriteriaQuery query = new CriteriaQuery();
+			QueryCondition query = new QueryCondition();
 			query.or(Criteria.newCriteria().isNotNull("id")).desc("id")
 					.setDistinct(true);
 			Page page = new Page();
@@ -96,7 +96,7 @@ public class CrudMapperTest extends AbstractMybatisTest {
 		SqlSession session = sqlSessionFactory.openSession();
 		try {
 			BlogMapper mapper = session.getMapper(BlogMapper.class);
-			CriteriaQuery query = new CriteriaQuery();
+			QueryCondition query = new QueryCondition();
 			query.or(Criteria.newCriteria().eq("id", 1)).desc("id")
 					.setDistinct(true);
 			List<Blog> list = mapper.query(query);
@@ -112,7 +112,7 @@ public class CrudMapperTest extends AbstractMybatisTest {
 		SqlSession session = sqlSessionFactory.openSession();
 		try {
 			BlogMapper mapper = session.getMapper(BlogMapper.class);
-			Blog blog = mapper.selectById(1);
+			Blog blog = mapper.selectByPrimaryKey(1);
 			Assert.assertTrue(blog.getAuthor().equals("author1"));
 		} finally {
 			session.commit();
@@ -128,33 +128,20 @@ public class CrudMapperTest extends AbstractMybatisTest {
 			Blog blog = new Blog();
 			blog.setId(10);
 			blog.setAuthor("author10-update");
-			mapper.update(blog);
+			mapper.updateByPrimaryKey(blog);
 		} finally {
 			session.commit();
 			session.close();
 		}
 	}
 
-	@Test
-	public void testDelete() {
-		SqlSession session = sqlSessionFactory.openSession();
-		try {
-			BlogMapper mapper = session.getMapper(BlogMapper.class);
-			Blog blog = new Blog();
-			blog.setId(11);
-			mapper.delete(blog);
-		} finally {
-			session.commit();
-			session.close();
-		}
-	}
 
 	@Test
 	public void testDeleteById() {
 		SqlSession session = sqlSessionFactory.openSession();
 		try {
 			BlogMapper mapper = session.getMapper(BlogMapper.class);
-			mapper.deleteById(12);
+			mapper.deleteByPrimaryKey(12);
 		} finally {
 			session.commit();
 			session.close();
