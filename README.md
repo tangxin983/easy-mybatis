@@ -35,7 +35,7 @@ public class Blog {
 	private String content;
 	
 	@Column(name = "create_date")
-	private String createDate;
+	private Date createDate;
 
   //getter,setter...
 }
