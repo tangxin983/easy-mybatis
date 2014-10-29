@@ -93,4 +93,7 @@ Page page = new Page();
 page.setCurrentPage(1);
 page.setSize(5);
 List<Blog> list = mapper.selectByPage(page);
+System.out.println(page.getRecordsTotal());
+System.out.println(page.getPageTotal());
 ```
+查询完毕后Page对象中还提供了recordsTotal(总记录数)和pageTotal（总页数）。
