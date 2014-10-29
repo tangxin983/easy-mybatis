@@ -76,7 +76,7 @@ public class CrudMapperTest extends AbstractMybatisTest {
 		try {
 			BlogMapper mapper = session.getMapper(BlogMapper.class);
 			CriteriaQuery query = new CriteriaQuery();
-			query.where(Criteria.newCriteria().isNotNull("id")).desc("id")
+			query.or(Criteria.newCriteria().isNotNull("id")).desc("id")
 					.setDistinct(true);
 			Page page = new Page();
 			page.setCurrentPage(1);
@@ -97,7 +97,7 @@ public class CrudMapperTest extends AbstractMybatisTest {
 		try {
 			BlogMapper mapper = session.getMapper(BlogMapper.class);
 			CriteriaQuery query = new CriteriaQuery();
-			query.where(Criteria.newCriteria().eq("id", 1)).desc("id")
+			query.or(Criteria.newCriteria().eq("id", 1)).desc("id")
 					.setDistinct(true);
 			List<Blog> list = mapper.query(query);
 			Assert.assertTrue(list.size() == 1);

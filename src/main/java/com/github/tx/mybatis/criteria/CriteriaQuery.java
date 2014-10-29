@@ -40,13 +40,6 @@ public class CriteriaQuery {
 		return (CriteriaQuery) this;
 	}
 
-	public CriteriaQuery where(Criteria criteria) {
-		if (criterias.size() == 0) {
-			criterias.add(criteria);
-		}
-		return (CriteriaQuery) this;
-	}
-
 	public CriteriaQuery desc(String column) {
 		descColumns.add(column);
 		return (CriteriaQuery) this;
