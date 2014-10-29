@@ -6,6 +6,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
@@ -25,7 +26,7 @@ import com.github.tx.mybatis.annotation.AutoResultMap;
 public class ReflectUtil {
 
 	// 用于存放各实体的属性名-列名关系
-	private static final Map<Class<?>, Map<String, String>> columnMap = new HashMap<Class<?>, Map<String, String>>();
+	private static final Map<Class<?>, Map<String, String>> field2ColumnMap = new ConcurrentHashMap<Class<?>, Map<String, String>>();
 
 	/**
 	 * 获取实体表名。实体需定义@Table(name)，如果没有name则取类名为表名
@@ -59,7 +60,7 @@ public class ReflectUtil {
 				return field.getName();
 		}
 		// 没有找到id，向上找父类的id
-		if (clazz.getSuperclass() != null) {
+		if (clazz.getSuperclass() != null && clazz.getSuperclass() != Object.class) {
 			return getParentIdFieldName(clazz.getSuperclass());
 		} else {
 			throw new RuntimeException("cant find @Id annotation");
@@ -78,7 +79,7 @@ public class ReflectUtil {
 				return field.getName();
 		}
 		// 继续向上找父类id
-		if (clazz.getSuperclass() != null) {
+		if (clazz.getSuperclass() != null && clazz.getSuperclass() != Object.class) {
 			return getParentIdFieldName(clazz.getSuperclass());
 		} else {
 			throw new RuntimeException("cant find @Id annotation");
@@ -103,7 +104,7 @@ public class ReflectUtil {
 				return field.getName();
 			}
 		}
-		if (clazz.getSuperclass() != null) {
+		if (clazz.getSuperclass() != null && clazz.getSuperclass() != Object.class) {
 			return getParentIdColumnName(clazz.getSuperclass());
 		} else {
 			throw new RuntimeException("cant find @Id annotation");
@@ -128,7 +129,7 @@ public class ReflectUtil {
 				return field.getName();
 			}
 		}
-		if (clazz.getSuperclass() != null) {
+		if (clazz.getSuperclass() != null && clazz.getSuperclass() != Object.class) {
 			return getParentIdColumnName(clazz.getSuperclass());
 		} else {
 			throw new RuntimeException("cant find @Id annotation");
@@ -138,8 +139,8 @@ public class ReflectUtil {
 	/**
 	 * 计算实体中标记为@Column的属性，以属性名为key，数据库字段名为value，放到Map中(这里排除@Id字段，即使该字段也有@Column)
 	 */
-	public static void caculationColumnList(Class<?> clazz) {
-		if (columnMap.containsKey(clazz)) {
+	public static void setFieldColumnMapping(Class<?> clazz) {
+		if (field2ColumnMap.containsKey(clazz)) {
 			return;
 		}
 		Map<String, String> columnDefs = new HashMap<String, String>();
@@ -153,7 +154,7 @@ public class ReflectUtil {
 			}
 		}
 		// 获取父类属性
-		if (clazz.getSuperclass() != null) {
+		if (clazz.getSuperclass() != null && clazz.getSuperclass() != Object.class) {
 			fields = clazz.getSuperclass().getDeclaredFields();
 			for (Field field : fields) {
 				if (field.isAnnotationPresent(Column.class)) {
@@ -164,7 +165,7 @@ public class ReflectUtil {
 				}
 			}
 		}
-		columnMap.put(clazz, columnDefs);
+		field2ColumnMap.put(clazz, columnDefs);
 	}
 	
 	/**
@@ -174,8 +175,8 @@ public class ReflectUtil {
 	 * @return
 	 */
 	public static Map<String, String> getFieldColumnMapping(Class<?> clazz) {
-		caculationColumnList(clazz);
-		return columnMap.get(clazz);
+		setFieldColumnMapping(clazz);
+		return field2ColumnMap.get(clazz);
 	}
 
 	/**
@@ -200,9 +201,9 @@ public class ReflectUtil {
 	 * @return
 	 */
 	public static String getUpdateSQL(Object obj) {
-		caculationColumnList(obj.getClass());
+		setFieldColumnMapping(obj.getClass());
 		StringBuilder sb = new StringBuilder();
-		Map<String, String> field2Column = columnMap.get(obj.getClass());
+		Map<String, String> field2Column = field2ColumnMap.get(obj.getClass());
 		int i = 0;
 		for (String fieldName : field2Column.keySet()) {
 			if (isFieldNull(obj, fieldName)) {
@@ -224,9 +225,9 @@ public class ReflectUtil {
 	 * @return
 	 */
 	public static String insertColumnNameList(Object obj) {
-		caculationColumnList(obj.getClass());
+		setFieldColumnMapping(obj.getClass());
 		StringBuilder sb = new StringBuilder();
-		Map<String, String> columnDefs = columnMap.get(obj.getClass());
+		Map<String, String> columnDefs = field2ColumnMap.get(obj.getClass());
 		int i = 0;
 		for (String fieldName : columnDefs.keySet()) {
 			if (isFieldNull(obj, fieldName)) {
@@ -247,9 +248,9 @@ public class ReflectUtil {
 	 * @return
 	 */
 	public static String insertFieldNameList(Object obj) {
-		caculationColumnList(obj.getClass());
+		setFieldColumnMapping(obj.getClass());
 		StringBuilder sb = new StringBuilder();
-		Map<String, String> columnDefs = columnMap.get(obj.getClass());
+		Map<String, String> columnDefs = field2ColumnMap.get(obj.getClass());
 		int i = 0;
 		for (String fieldName : columnDefs.keySet()) {
 			if (isFieldNull(obj, fieldName)) {
@@ -310,7 +311,7 @@ public class ReflectUtil {
 		try {
 			mapperClass = Class.forName(className);
 		} catch (ClassNotFoundException e) {
-			throw new RuntimeException("cant not find class:" + className);
+			throw new RuntimeException("cant find class:" + className);
 		}
 		Method[] methods = mapperClass.getMethods();
 		for (Method method : methods) {
