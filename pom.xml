@@ -5,7 +5,7 @@
 	<artifactId>easy-mybatis</artifactId>
 	<version>1.0.0</version>
 	<name>easy-mybatis</name>
-	<description>make mybatis much easy to use</description>
+	<description>make mybatis much easier to use</description>
 	<licenses>
 		<license>
 			<name>The Apache Software License, Version 2.0</name>
