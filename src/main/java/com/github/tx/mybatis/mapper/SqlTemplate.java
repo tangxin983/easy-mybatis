@@ -74,8 +74,8 @@ public class SqlTemplate {
 	}
 
 	/**
-	 * 查询记录总数
-	 * 
+	 * 查询记录数
+	 *
 	 * @param clazz
 	 * @return
 	 */
@@ -87,6 +87,20 @@ public class SqlTemplate {
 			}
 		}.toString();
 	}
+	
+	/**
+	 * 根据条件查询记录数
+	 * 
+	 * @param parameter
+	 * @return
+	 */
+	public String countByCondition(final Map<String, Object> parameter) {
+		Class<?> clazz = (Class<?>) parameter.get(Constants.CLASS_KEY);
+		QueryCondition query = (QueryCondition) parameter.get(Constants.CRITERIA_KEY);
+		SQL sql = new SQL().SELECT("count(1)");
+		sql.FROM(ReflectUtil.getTableName(clazz));
+		return where(sql, query);
+	}
 
 	/**
 	 * 根据条件查询记录
@@ -94,7 +108,7 @@ public class SqlTemplate {
 	 * @param parameter
 	 * @return
 	 */
-	public String query(final Map<String, Object> parameter) {
+	public String selectByCondition(final Map<String, Object> parameter) {
 		Class<?> clazz = (Class<?>) parameter.get(Constants.CLASS_KEY);
 		QueryCondition query = (QueryCondition) parameter.get(Constants.CRITERIA_KEY);
 		SQL sql = new SQL();
@@ -105,6 +119,15 @@ public class SqlTemplate {
 		}
 		sql.FROM(ReflectUtil.getTableName(clazz));
 		return where(sql, query);
+	}
+	
+	/**
+	 * 根据条件查询记录(分页)
+	 * @param parameter
+	 * @return
+	 */
+	public String selectByConditionAndPage(final Map<String, Object> parameter) {
+		return selectByCondition(parameter);
 	}
 
 	/**
