@@ -13,7 +13,7 @@ public class Criteria {
 	
 	protected List<Criterion> criterions;
 	
-	private Criteria() {
+	public Criteria() {
 		criterions = new ArrayList<Criterion>();
 	}
 	
