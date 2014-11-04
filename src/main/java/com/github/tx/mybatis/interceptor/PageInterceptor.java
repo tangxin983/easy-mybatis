@@ -123,7 +123,12 @@ public class PageInterceptor extends BaseInterceptor implements Interceptor {
 			return sql;
 		}
 		StringBuilder sb = new StringBuilder();
-		int startRow = (page.getCurrentPage() - 1) * page.getSize();
+		int startRow = 0;
+		if (page.getStart() != 0) {
+			startRow = page.getStart();
+		} else {
+			startRow = (page.getCurrentPage() - 1) * page.getSize();
+		}
 		if (startRow <= 0) {
 			startRow = 0;
 		}

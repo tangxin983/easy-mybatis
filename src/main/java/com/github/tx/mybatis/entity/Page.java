@@ -19,6 +19,9 @@ public class Page {
 
 	/** 总页数 */
 	private int pageTotal;
+	
+	/** 当前页头条记录序号(序号从0开始) */
+	private int start;
 
 	/** 当前页 */
 	private int currentPage;
@@ -65,4 +68,11 @@ public class Page {
 		this.currentPage = currentPage;
 	}
 
+	public int getStart() {
+		return start;
+	}
+
+	public void setStart(int start) {
+		this.start = start;
+	}
 }
