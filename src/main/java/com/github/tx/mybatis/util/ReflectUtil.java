@@ -26,8 +26,10 @@ import com.github.tx.mybatis.annotation.AutoMapping;
 
 public class ReflectUtil {
 
-	// 用于存放各实体的属性名-列名关系
+	// 用于存放实体的属性名-列名关系
 	private static final Map<Class<?>, Map<String, String>> field2ColumnMap = new ConcurrentHashMap<Class<?>, Map<String, String>>();
+	// 用于存放实体的id字段名和列名
+	private static final Map<Class<?>, Map<String, String>> idMap = new ConcurrentHashMap<Class<?>, Map<String, String>>();
 
 	/**
 	 * 获取实体表名。实体需定义@Table(name)，如果没有name则取类名为表名
@@ -46,7 +48,43 @@ public class ReflectUtil {
 		} else {
 			throw new RuntimeException("cant find @Table annotation");
 		}
-
+	}
+	
+	/**
+	 * 将实体id的字段名和列名存放到map中
+	 * @param clazz
+	 */
+	public static void setIdMap(Class<?> clazz) {
+		if (idMap.containsKey(clazz)) {
+			return;
+		}
+		String idFieldName = "", idColumnName = "";
+		for (Field field : clazz.getDeclaredFields()) {
+			if (field.isAnnotationPresent(Id.class)){
+				idFieldName = field.getName();
+				if (field.isAnnotationPresent(Column.class)) {
+					Column c = field.getAnnotation(Column.class);
+					if (StringUtils.isNotBlank(c.name())) {
+						idColumnName = c.name();
+					}
+				} else {
+					idColumnName = field.getName();
+				}
+			}
+		}
+		// 没有找到，继续向上找父类
+		if (idFieldName.equals("") && clazz.getSuperclass() != null
+				&& clazz.getSuperclass() != Object.class) {
+			idFieldName = getParentIdFieldName(clazz.getSuperclass());
+		} 
+		if (idColumnName.equals("") && clazz.getSuperclass() != null
+				&& clazz.getSuperclass() != Object.class) {
+			idColumnName = getParentIdColumnName(clazz.getSuperclass());
+		} 
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("field", idFieldName);
+		map.put("column", idColumnName);
+		idMap.put(clazz, map);
 	}
 
 	/**
@@ -56,17 +94,19 @@ public class ReflectUtil {
 	 * @return
 	 */
 	public static String getIdFieldName(Class<?> clazz) {
-		for (Field field : clazz.getDeclaredFields()) {
-			if (field.isAnnotationPresent(Id.class))
-				return field.getName();
-		}
-		// 没有找到id，向上找父类的id
-		if (clazz.getSuperclass() != null
-				&& clazz.getSuperclass() != Object.class) {
-			return getParentIdFieldName(clazz.getSuperclass());
-		} else {
-			return null;
-		}
+		setIdMap(clazz);
+		return idMap.get(clazz).get("field");
+	}
+	
+	/**
+	 * 获取主键列名
+	 * 
+	 * @param clazz
+	 * @return
+	 */
+	public static String getIdColumnName(Class<?> clazz) {
+		setIdMap(clazz);
+		return idMap.get(clazz).get("column");
 	}
 
 	/**
@@ -85,34 +125,7 @@ public class ReflectUtil {
 				&& clazz.getSuperclass() != Object.class) {
 			return getParentIdFieldName(clazz.getSuperclass());
 		} else {
-			return null;
-		}
-	}
-
-	/**
-	 * 获取主键列名
-	 * 
-	 * @param clazz
-	 * @return
-	 */
-	public static String getIdColumnName(Class<?> clazz) {
-		for (Field field : clazz.getDeclaredFields()) {
-			if (field.isAnnotationPresent(Id.class)) {
-				if (field.isAnnotationPresent(Column.class)) {
-					Column c = field.getAnnotation(Column.class);
-					if (StringUtils.isNotBlank(c.name())) {
-						return c.name();
-					}
-				} else {
-					return field.getName();
-				}
-			}
-		}
-		if (clazz.getSuperclass() != null
-				&& clazz.getSuperclass() != Object.class) {
-			return getParentIdColumnName(clazz.getSuperclass());
-		} else {
-			return null;
+			return "";
 		}
 	}
 
@@ -138,12 +151,13 @@ public class ReflectUtil {
 				&& clazz.getSuperclass() != Object.class) {
 			return getParentIdColumnName(clazz.getSuperclass());
 		} else {
-			return null;
+			return "";
 		}
 	}
 
 	/**
-	 * 计算实体中标记为@Column的属性，以属性名为key，数据库字段名为value，放到Map中(这里排除@Id字段，即使该字段也有@Column)
+	 * 实体中标记为@Column的属性，以属性名为key，数据库字段名为value，放到Map中(这里排除@Id字段，即使该字段也有@Column)
+	 * @param clazz
 	 */
 	public static void setFieldColumnMapping(Class<?> clazz) {
 		if (field2ColumnMap.containsKey(clazz)) {
@@ -174,7 +188,7 @@ public class ReflectUtil {
 		}
 		field2ColumnMap.put(clazz, columnDefs);
 	}
-
+	
 	/**
 	 * 获取类对应的属性名-列名关系
 	 * 
@@ -185,6 +199,17 @@ public class ReflectUtil {
 	public static Map<String, String> getFieldColumnMapping(Class<?> clazz) {
 		setFieldColumnMapping(clazz);
 		return field2ColumnMap.get(clazz);
+	}
+	
+	/**
+	 * 根据字段名获取对应列名
+	 * @param clazz
+	 * @param fieldName
+	 * @return 列名
+	 */
+	public static String getColumnNameByFieldName(Class<?> clazz, String fieldName) {
+		Map<String, String> map = getFieldColumnMapping(clazz);
+		return map.get(fieldName);
 	}
 
 	/**

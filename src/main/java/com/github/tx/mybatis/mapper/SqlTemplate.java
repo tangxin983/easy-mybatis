@@ -47,7 +47,7 @@ public class SqlTemplate {
 	 */
 	public String selectByPrimaryKey(final Map<String, Object> parameter) {
 		final Class<?> clazz = (Class<?>) parameter.get(Constants.CLASS_KEY);
-		if (ReflectUtil.getIdFieldName(clazz) == null) {
+		if (StringUtils.isBlank(ReflectUtil.getIdFieldName(clazz))) {
 			throw new RuntimeException(
 					"selectByPrimaryKey error:cant find @Id annotation in "
 							+ clazz.getName());
@@ -87,7 +87,7 @@ public class SqlTemplate {
 			}
 		}.toString();
 	}
-	
+
 	/**
 	 * 根据条件查询记录数
 	 * 
@@ -96,10 +96,11 @@ public class SqlTemplate {
 	 */
 	public String countByCondition(final Map<String, Object> parameter) {
 		Class<?> clazz = (Class<?>) parameter.get(Constants.CLASS_KEY);
-		QueryCondition query = (QueryCondition) parameter.get(Constants.CRITERIA_KEY);
+		QueryCondition query = (QueryCondition) parameter
+				.get(Constants.CRITERIA_KEY);
 		SQL sql = new SQL().SELECT("count(1)");
 		sql.FROM(ReflectUtil.getTableName(clazz));
-		return where(sql, query);
+		return where(sql, clazz, query);
 	}
 
 	/**
@@ -110,7 +111,8 @@ public class SqlTemplate {
 	 */
 	public String selectByCondition(final Map<String, Object> parameter) {
 		Class<?> clazz = (Class<?>) parameter.get(Constants.CLASS_KEY);
-		QueryCondition query = (QueryCondition) parameter.get(Constants.CRITERIA_KEY);
+		QueryCondition query = (QueryCondition) parameter
+				.get(Constants.CRITERIA_KEY);
 		SQL sql = new SQL();
 		if (query.isDistinct()) {
 			sql.SELECT_DISTINCT("*");
@@ -118,11 +120,12 @@ public class SqlTemplate {
 			sql.SELECT("*");
 		}
 		sql.FROM(ReflectUtil.getTableName(clazz));
-		return where(sql, query);
+		return where(sql, clazz, query);
 	}
-	
+
 	/**
 	 * 根据条件查询记录(分页)
+	 * 
 	 * @param parameter
 	 * @return
 	 */
@@ -163,7 +166,7 @@ public class SqlTemplate {
 	 */
 	public String updateByPrimaryKey(final Object t) {
 		final Class<?> clazz = t.getClass();
-		if (ReflectUtil.getIdFieldName(clazz) == null) {
+		if (StringUtils.isBlank(ReflectUtil.getIdFieldName(clazz))) {
 			throw new RuntimeException(
 					"updateByPrimaryKey error:cant find @Id annotation in "
 							+ clazz.getName());
@@ -186,7 +189,7 @@ public class SqlTemplate {
 	 */
 	public String deleteByPrimaryKey(final Map<String, Object> parameter) {
 		final Class<?> clazz = (Class<?>) parameter.get(Constants.CLASS_KEY);
-		if (ReflectUtil.getIdFieldName(clazz) == null) {
+		if (StringUtils.isBlank(ReflectUtil.getIdFieldName(clazz))) {
 			throw new RuntimeException(
 					"deleteByPrimaryKey error:cant find @Id annotation in "
 							+ clazz.getName());
@@ -207,12 +210,13 @@ public class SqlTemplate {
 	 * @return
 	 */
 	public String updateByCondition(final Map<String, Object> parameter) {
-		UpdateCondition query = (UpdateCondition) parameter.get(Constants.CRITERIA_KEY);
+		UpdateCondition query = (UpdateCondition) parameter
+				.get(Constants.CRITERIA_KEY);
 		Object t = (Object) parameter.get(Constants.ENTITY_KEY);
 		Class<?> clazz = (Class<?>) t.getClass();
 		SQL sql = new SQL().UPDATE(ReflectUtil.getTableName(clazz)).SET(
 				ReflectUtil.getUpdateSQL(t, true));
-		return where(sql, query);
+		return where(sql, clazz, query);
 	}
 
 	/**
@@ -223,9 +227,10 @@ public class SqlTemplate {
 	 */
 	public String deleteByCondition(final Map<String, Object> parameter) {
 		Class<?> clazz = (Class<?>) parameter.get(Constants.CLASS_KEY);
-		UpdateCondition query = (UpdateCondition) parameter.get(Constants.CRITERIA_KEY);
+		UpdateCondition query = (UpdateCondition) parameter
+				.get(Constants.CRITERIA_KEY);
 		SQL sql = new SQL().DELETE_FROM(ReflectUtil.getTableName(clazz));
-		return where(sql, query);
+		return where(sql, clazz, query);
 	}
 
 	/**
@@ -235,7 +240,7 @@ public class SqlTemplate {
 	 * @param query
 	 * @return
 	 */
-	private String where(SQL sql, Condition query) {
+	private String where(SQL sql, Class<?> clazz, Condition query) {
 		List<Criteria> criterias = query.getCriterias();
 		int size = criterias.size();
 		int i = 0, j = 0;
@@ -243,6 +248,9 @@ public class SqlTemplate {
 			j = 0;
 			for (Criterion criterion : criteria.getCriterions()) {
 				String condition = criterion.getCondition();
+				String property = criterion.getProperty();
+				String realColumnName = getRealColumnName(clazz, property);
+				condition = condition.replace(property, realColumnName);// 替换condition中的属性名为真实列名
 				Object value = criterion.getValue();
 				Object secondValue = criterion.getSecondValue();
 				StringBuffer sb = new StringBuffer();
@@ -299,22 +307,42 @@ public class SqlTemplate {
 			Set<String> groupBys = queryCondition.getGroupByColumns();
 			for (String column : groupBys) {
 				if (StringUtils.isNotBlank(column)) {
-					sql.GROUP_BY(column);
+					sql.GROUP_BY(getRealColumnName(clazz, column));
 				}
 			}
 			Set<String> ascs = queryCondition.getAscColumns();
 			for (String column : ascs) {
 				if (StringUtils.isNotBlank(column)) {
-					sql.ORDER_BY(column + " asc");
+					sql.ORDER_BY(getRealColumnName(clazz, column) + " asc");
 				}
 			}
 			Set<String> descs = queryCondition.getDescColumns();
 			for (String column : descs) {
 				if (StringUtils.isNotBlank(column)) {
-					sql.ORDER_BY(column + " desc");
+					sql.ORDER_BY(getRealColumnName(clazz, column) + " desc");
 				}
 			}
 		}
 		return sql.toString();
+	}
+	
+	/**
+	 * 通过字段名找列名
+	 * @param clazz
+	 * @param property
+	 * @return
+	 */
+	private String getRealColumnName(Class<?> clazz, String property){
+		// 如果property是主键
+		if (property.equals(ReflectUtil.getIdColumnName(clazz))
+				|| property.equals(ReflectUtil.getIdFieldName(clazz))) {
+			return ReflectUtil.getIdColumnName(clazz);
+		}else{// 如果property不是主键
+			String columnName = ReflectUtil.getColumnNameByFieldName(clazz, property);
+			if (StringUtils.isNotBlank(columnName)) {
+				return columnName;
+			}
+		}
+		return property;
 	}
 }
