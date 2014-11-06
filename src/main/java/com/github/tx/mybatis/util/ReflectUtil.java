@@ -345,11 +345,10 @@ public class ReflectUtil {
 	 * @return
 	 */
 	public static boolean isAutoMapping(Method method) {
-		if (method.isAnnotationPresent(AutoMapping.class)) {
+		if(method != null && method.isAnnotationPresent(AutoMapping.class)){
 			return true;
-		} else {
-			return false;
 		}
+		return false;
 	}
 
 	/**
