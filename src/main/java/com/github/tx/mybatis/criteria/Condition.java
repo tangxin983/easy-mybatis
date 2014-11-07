@@ -40,7 +40,7 @@ public abstract class Condition {
 	 * @param property
 	 * @return
 	 */
-	public void transform(Class<?> clazz) {
+	public Condition transform(Class<?> clazz) {
 		List<Criteria> criterias = this.getCriterias();
 		for (Criteria criteria : criterias) {
 			for (Criterion criterion : criteria.getCriterions()) {
@@ -51,6 +51,7 @@ public abstract class Condition {
 						realColumnName));// 替换condition中的属性名为真实列名
 			}
 		}
+		return this;
 	}
 
 	/**
@@ -61,17 +62,18 @@ public abstract class Condition {
 	 * @return
 	 */
 	protected String getRealColumnName(Class<?> clazz, String property) {
+		String tableName = ReflectUtil.getTableName(clazz);
 		// 如果property是主键
 		if (property.equals(ReflectUtil.getIdColumnName(clazz))
 				|| property.equals(ReflectUtil.getIdFieldName(clazz))) {
-			return ReflectUtil.getIdColumnName(clazz);
+			return tableName + "." + ReflectUtil.getIdColumnName(clazz);
 		} else {// 如果property不是主键
 			String columnName = ReflectUtil.getColumnNameByFieldName(clazz,
 					property);
 			if (StringUtils.isNotBlank(columnName)) {
-				return columnName;
+				return tableName + "." + columnName;
 			}
 		}
-		return property;
+		return tableName + "." + property;
 	}
 }

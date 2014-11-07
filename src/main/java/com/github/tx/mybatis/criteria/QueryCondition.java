@@ -95,11 +95,12 @@ public class QueryCondition extends Condition {
 	}
 
 	@Override
-	public void transform(Class<?> clazz) {
+	public QueryCondition transform(Class<?> clazz) {
 		super.transform(clazz);
 		groupByColumns = transformSet(clazz, groupByColumns);
 		descColumns = transformSet(clazz, descColumns);
 		ascColumns = transformSet(clazz, ascColumns);
+		return this;
 	}
 	
 	private Set<String> transformSet(Class<?> clazz, Set<String> oldSet){
