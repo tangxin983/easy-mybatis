@@ -27,7 +27,7 @@ public class QueryCondition extends Condition {
 		ascColumns = new HashSet<String>();
 		groupByColumns = new HashSet<String>();
 	}
-	
+
 	@Override
 	public QueryCondition or(Criteria criteria) {
 		criterias.add(criteria);
@@ -90,6 +90,23 @@ public class QueryCondition extends Condition {
 		super.clear();
 		descColumns.clear();
 		ascColumns.clear();
+		groupByColumns.clear();
 		distinct = false;
+	}
+
+	@Override
+	public void transform(Class<?> clazz) {
+		super.transform(clazz);
+		groupByColumns = transformSet(clazz, groupByColumns);
+		descColumns = transformSet(clazz, descColumns);
+		ascColumns = transformSet(clazz, ascColumns);
+	}
+	
+	private Set<String> transformSet(Class<?> clazz, Set<String> oldSet){
+		Set<String> newSet = new HashSet<String>();
+		for (String column : oldSet) {
+			newSet.add(getRealColumnName(clazz, column));
+		}
+		return newSet;
 	}
 }

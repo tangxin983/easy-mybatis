@@ -5,22 +5,23 @@ import java.util.List;
 
 /**
  * 构建用and连接的条件
+ * 
  * @author tangx
  * @since 2014年10月27日
  */
 
 public class Criteria {
-	
+
 	protected List<Criterion> criterions;
-	
+
 	public Criteria() {
 		criterions = new ArrayList<Criterion>();
 	}
-	
-	public static Criteria newCriteria(){
+
+	public static Criteria newCriteria() {
 		return new Criteria();
 	}
- 
+
 	public List<Criterion> getCriterions() {
 		return criterions;
 	}
@@ -36,10 +37,11 @@ public class Criteria {
 		if (value == null) {
 			throw new RuntimeException("value cannot be null");
 		}
-		criterions.add(new Criterion(condition, property , value));
+		criterions.add(new Criterion(condition, property, value));
 	}
 
-	protected void addCriterion(String condition, String property, Object value1, Object value2) {
+	protected void addCriterion(String condition, String property,
+			Object value1, Object value2) {
 		if (value1 == null || value2 == null) {
 			throw new RuntimeException("value cannot be null");
 		}
@@ -50,7 +52,7 @@ public class Criteria {
 		addCriterion(property + " is null", property);
 		return (Criteria) this;
 	}
-	
+
 	public Criteria isNotNull(String property) {
 		addCriterion(property + " is not null", property);
 		return (Criteria) this;
@@ -132,11 +134,15 @@ public class Criteria {
 		private boolean listValue;
 
 		private String typeHandler;
-		
+
 		private String property;
 
 		public String getCondition() {
 			return condition;
+		}
+
+		public void setCondition(String condition) {
+			this.condition = condition;
 		}
 
 		public Object getValue() {
@@ -178,7 +184,8 @@ public class Criteria {
 			this.noValue = true;
 		}
 
-		protected Criterion(String condition, String property, Object value, String typeHandler) {
+		protected Criterion(String condition, String property, Object value,
+				String typeHandler) {
 			this.condition = condition;
 			this.property = property;
 			this.value = value;
@@ -194,8 +201,8 @@ public class Criteria {
 			this(condition, property, value, null);
 		}
 
-		protected Criterion(String condition, String property, Object value, Object secondValue,
-				String typeHandler) {
+		protected Criterion(String condition, String property, Object value,
+				Object secondValue, String typeHandler) {
 			this.condition = condition;
 			this.property = property;
 			this.value = value;
@@ -204,7 +211,8 @@ public class Criteria {
 			this.betweenValue = true;
 		}
 
-		protected Criterion(String condition, String property, Object value, Object secondValue) {
+		protected Criterion(String condition, String property, Object value,
+				Object secondValue) {
 			this(condition, property, value, secondValue, null);
 		}
 	}

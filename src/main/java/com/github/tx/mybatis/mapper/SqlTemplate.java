@@ -143,7 +143,7 @@ public class SqlTemplate {
 		final Class<?> clazz = t.getClass();
 		return new SQL() {
 			{
-				if (ReflectUtil.getIdFieldName(clazz) != null) {
+				if (StringUtils.isNotBlank(ReflectUtil.getIdFieldName(clazz))) {
 					INSERT_INTO(ReflectUtil.getTableName(clazz));
 					VALUES(ReflectUtil.getIdColumnName(clazz) + ","
 							+ ReflectUtil.insertColumnNameList(t), "#{"
@@ -241,6 +241,7 @@ public class SqlTemplate {
 	 * @return
 	 */
 	private String where(SQL sql, Class<?> clazz, Condition query) {
+		query.transform(clazz);
 		List<Criteria> criterias = query.getCriterias();
 		int size = criterias.size();
 		int i = 0, j = 0;
@@ -248,9 +249,6 @@ public class SqlTemplate {
 			j = 0;
 			for (Criterion criterion : criteria.getCriterions()) {
 				String condition = criterion.getCondition();
-				String property = criterion.getProperty();
-				String realColumnName = getRealColumnName(clazz, property);
-				condition = condition.replace(property, realColumnName);// 替换condition中的属性名为真实列名
 				Object value = criterion.getValue();
 				Object secondValue = criterion.getSecondValue();
 				StringBuffer sb = new StringBuffer();
@@ -307,42 +305,22 @@ public class SqlTemplate {
 			Set<String> groupBys = queryCondition.getGroupByColumns();
 			for (String column : groupBys) {
 				if (StringUtils.isNotBlank(column)) {
-					sql.GROUP_BY(getRealColumnName(clazz, column));
+					sql.GROUP_BY(column);
 				}
 			}
 			Set<String> ascs = queryCondition.getAscColumns();
 			for (String column : ascs) {
 				if (StringUtils.isNotBlank(column)) {
-					sql.ORDER_BY(getRealColumnName(clazz, column) + " asc");
+					sql.ORDER_BY(column + " asc");
 				}
 			}
 			Set<String> descs = queryCondition.getDescColumns();
 			for (String column : descs) {
 				if (StringUtils.isNotBlank(column)) {
-					sql.ORDER_BY(getRealColumnName(clazz, column) + " desc");
+					sql.ORDER_BY(column + " desc");
 				}
 			}
 		}
 		return sql.toString();
-	}
-	
-	/**
-	 * 通过字段名找列名
-	 * @param clazz
-	 * @param property
-	 * @return
-	 */
-	private String getRealColumnName(Class<?> clazz, String property){
-		// 如果property是主键
-		if (property.equals(ReflectUtil.getIdColumnName(clazz))
-				|| property.equals(ReflectUtil.getIdFieldName(clazz))) {
-			return ReflectUtil.getIdColumnName(clazz);
-		}else{// 如果property不是主键
-			String columnName = ReflectUtil.getColumnNameByFieldName(clazz, property);
-			if (StringUtils.isNotBlank(columnName)) {
-				return columnName;
-			}
-		}
-		return property;
 	}
 }
