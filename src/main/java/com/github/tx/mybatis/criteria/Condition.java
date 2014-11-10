@@ -41,14 +41,17 @@ public abstract class Condition {
 	 * @return
 	 */
 	public Condition transform(Class<?> clazz) {
+		String tableName = ReflectUtil.getTableName(clazz);
 		List<Criteria> criterias = this.getCriterias();
 		for (Criteria criteria : criterias) {
 			for (Criterion criterion : criteria.getCriterions()) {
 				String condition = criterion.getCondition();
 				String property = criterion.getProperty();
-				String realColumnName = getRealColumnName(clazz, property);
-				criterion.setCondition(condition.replace(property,
-						realColumnName));// 替换condition中的属性名为真实列名
+				if(condition.indexOf(tableName + ".") == -1){
+					String realColumnName = getRealColumnName(clazz, property);
+					criterion.setCondition(condition.replace(property,
+							realColumnName));// 替换condition中的属性名为真实列名
+				}
 			}
 		}
 		return this;

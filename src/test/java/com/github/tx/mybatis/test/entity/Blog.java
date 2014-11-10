@@ -1,5 +1,7 @@
 package com.github.tx.mybatis.test.entity;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -21,8 +23,8 @@ public class Blog {
 	@Column
 	private String author;
 
-	@Column
-	private String content;
+	@Column(name = "create_time")
+	private Date createTime; 
 
 	public Integer getId() {
 		return id;
@@ -40,16 +42,16 @@ public class Blog {
 		this.author = author;
 	}
 
-	public String getContent() {
-		return content;
+	public Date getCreateTime() {
+		return createTime;
 	}
 
-	public void setContent(String content) {
-		this.content = content;
+	public void setCreateTime(Date createTime) {
+		this.createTime = createTime;
 	}
-	
+
 	public String toString() {
-        return ToStringBuilder.reflectionToString(this);
-    }
+		return ToStringBuilder.reflectionToString(this);
+	}
 
 }

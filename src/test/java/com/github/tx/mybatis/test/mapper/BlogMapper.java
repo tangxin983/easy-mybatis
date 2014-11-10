@@ -1,8 +1,10 @@
 package com.github.tx.mybatis.test.mapper;
 
 import java.util.List;
-import java.util.Map;
 
+import org.apache.ibatis.annotations.Param;
+
+import com.github.tx.mybatis.criteria.QueryCondition;
 import com.github.tx.mybatis.mapper.CrudMapper;
 import com.github.tx.mybatis.test.entity.Blog;
 
@@ -14,5 +16,5 @@ import com.github.tx.mybatis.test.entity.Blog;
 
 public interface BlogMapper extends CrudMapper<Blog> {
   
-	public List<Map> ComplexSelect();
+	public List<Blog> selectByXml(@Param("condition") QueryCondition condition);
 }

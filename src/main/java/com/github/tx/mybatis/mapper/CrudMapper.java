@@ -12,7 +12,6 @@ import org.apache.ibatis.annotations.UpdateProvider;
 import com.github.tx.mybatis.annotation.AutoMapping;
 import com.github.tx.mybatis.criteria.QueryCondition;
 import com.github.tx.mybatis.criteria.UpdateCondition;
-import com.github.tx.mybatis.entity.Page;
 import com.github.tx.mybatis.util.Constants;
 
 /**
@@ -32,16 +31,6 @@ public interface CrudMapper<T> {
 	@SelectProvider(type = SqlTemplate.class, method = "select")
 	@AutoMapping
 	List<T> select();
-
-	/**
-	 * 查找所有记录（分页）
-	 * 
-	 * @param page
-	 * @return 实体列表
-	 */
-	@SelectProvider(type = SqlTemplate.class, method = "selectByPage")
-	@AutoMapping
-	List<T> selectByPage(Page page);
 
 	/**
 	 * 根据主键查找记录
@@ -64,21 +53,6 @@ public interface CrudMapper<T> {
 	@AutoMapping
 	List<T> selectByCondition(
 			@Param(value = Constants.CRITERIA_KEY) QueryCondition condition);
-
-	/**
-	 * 根据条件查找记录（分页）
-	 * 
-	 * @param page
-	 *            分页信息
-	 * @param query
-	 *            查询条件
-	 * @return 实体列表
-	 */
-	@SelectProvider(type = SqlTemplate.class, method = "selectByConditionAndPage")
-	@AutoMapping
-	List<T> selectByConditionAndPage(
-			@Param(value = Constants.CRITERIA_KEY) QueryCondition condition,
-			Page page);
 
 	/**
 	 * 查询记录数

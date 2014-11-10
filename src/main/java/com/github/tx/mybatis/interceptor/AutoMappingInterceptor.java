@@ -21,9 +21,15 @@ import org.apache.ibatis.plugin.Plugin;
 import org.apache.ibatis.plugin.Signature;
 import org.apache.ibatis.reflection.MetaClass;
 import org.apache.ibatis.reflection.MetaObject;
+import org.apache.ibatis.reflection.factory.DefaultObjectFactory;
+import org.apache.ibatis.reflection.factory.ObjectFactory;
+import org.apache.ibatis.reflection.wrapper.DefaultObjectWrapperFactory;
+import org.apache.ibatis.reflection.wrapper.ObjectWrapperFactory;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.github.tx.mybatis.util.Constants;
 import com.github.tx.mybatis.util.ReflectUtil;
@@ -40,10 +46,15 @@ import com.github.tx.mybatis.util.ReflectUtil;
 				ResultHandler.class }),
 		@Signature(type = Executor.class, method = "update", args = {
 				MappedStatement.class, Object.class }) })
-public class AutoMappingInterceptor extends BaseInterceptor implements
-		Interceptor {
+public class AutoMappingInterceptor implements Interceptor {
 
 	private static final String GENERATE_RESULTMAP_NAME = "GenerateResultMap";
+
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+	private static final ObjectFactory OBJECT_FACTORY = new DefaultObjectFactory();
+
+	private static final ObjectWrapperFactory OBJECT_WRAPPER_FACTORY = new DefaultObjectWrapperFactory();
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
@@ -74,13 +85,37 @@ public class AutoMappingInterceptor extends BaseInterceptor implements
 			}
 			if (ReflectUtil.isGenerateResultMap(mapperMethod)) {
 				// 自动生成resultMap
-				List<ResultMap> resultMaps = getResultMap(namespace, entityClazz,
-						ms.getConfiguration());
+				List<ResultMap> resultMaps = getResultMap(namespace,
+						entityClazz, ms.getConfiguration());
 				MetaObject metaMappedStatement = getMetaObject(ms);
 				metaMappedStatement.setValue("resultMaps", resultMaps);
 			}
 		}
 		return invocation.proceed();
+	}
+
+	/**
+	 * 获取被拦截的原始对象(MetaObject包装)
+	 * 
+	 * @param obj
+	 * @return
+	 */
+	private MetaObject getMetaObject(Object obj) {
+		MetaObject metaStatementHandler = MetaObject.forObject(obj,
+				OBJECT_FACTORY, OBJECT_WRAPPER_FACTORY);
+		// 由于目标类可能被多个拦截器拦截，从而形成多次代理，通过以下循环找出原始代理
+		while (metaStatementHandler.hasGetter("h")) {
+			Object object = metaStatementHandler.getValue("h");
+			metaStatementHandler = MetaObject.forObject(object, OBJECT_FACTORY,
+					OBJECT_WRAPPER_FACTORY);
+		}
+		// 得到原始代理对象的目标类
+		if (metaStatementHandler.hasGetter("target")) {
+			Object object = metaStatementHandler.getValue("target");
+			metaStatementHandler = MetaObject.forObject(object, OBJECT_FACTORY,
+					OBJECT_WRAPPER_FACTORY);
+		}
+		return metaStatementHandler;
 	}
 
 	/**

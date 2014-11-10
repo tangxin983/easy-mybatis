@@ -63,17 +63,6 @@ public class SqlTemplate {
 	}
 
 	/**
-	 * 查询所有记录(分页)
-	 * 
-	 * @param parameter
-	 * @return
-	 */
-	public String selectByPage(final Map<String, Object> parameter) {
-		Class<?> clazz = (Class<?>) parameter.get(Constants.CLASS_KEY);
-		return select(clazz);
-	}
-
-	/**
 	 * 查询记录数
 	 *
 	 * @param clazz
@@ -121,16 +110,6 @@ public class SqlTemplate {
 		}
 		sql.FROM(ReflectUtil.getTableName(clazz));
 		return where(sql, clazz, query);
-	}
-
-	/**
-	 * 根据条件查询记录(分页)
-	 * 
-	 * @param parameter
-	 * @return
-	 */
-	public String selectByConditionAndPage(final Map<String, Object> parameter) {
-		return selectByCondition(parameter);
 	}
 
 	/**

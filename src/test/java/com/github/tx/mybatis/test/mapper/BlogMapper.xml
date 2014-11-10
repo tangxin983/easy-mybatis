@@ -2,8 +2,39 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.github.tx.mybatis.test.mapper.BlogMapper">
 
-	<select id="ComplexSelect" resultType="map">
-		select * from blog
+	<select id="selectByXml" resultType="Blog">
+		select id,author from blog
+		<include refid="selectClause" />
 	</select>
-	
+
+	<sql id="selectClause">
+		<where>
+			<foreach collection="condition.criterias" item="criteria"
+				separator="or">
+				<trim prefix="(" suffix=")" prefixOverrides="and">
+					<foreach collection="criteria.criterions" item="criterion">
+						<choose>
+							<when test="criterion.noValue">
+								and ${criterion.condition}
+							</when>
+							<when test="criterion.singleValue">
+								and ${criterion.condition} #{criterion.value}
+							</when>
+							<when test="criterion.betweenValue">
+								and ${criterion.condition} #{criterion.value} and
+								#{criterion.secondValue}
+							</when>
+							<when test="criterion.listValue">
+								and ${criterion.condition}
+								<foreach collection="criterion.value" item="listItem"
+									open="(" close=")" separator=",">
+									#{listItem}
+								</foreach>
+							</when>
+						</choose>
+					</foreach>
+				</trim>
+			</foreach>
+		</where>
+	</sql>
 </mapper>
