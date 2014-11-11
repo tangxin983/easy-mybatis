@@ -46,7 +46,7 @@
 			<foreach collection="condition.ascColumns" item="ascColumn" separator=",">
 				${ascColumn} asc
 			</foreach>
-			<if test="condition.descColumns.size() > 0">
+			<if test="condition.ascColumns.size() > 0 and condition.descColumns.size() > 0">
 			,
 			</if>
 			<foreach collection="condition.descColumns" item="descColumn" separator=",">
