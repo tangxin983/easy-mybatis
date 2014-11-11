@@ -36,5 +36,22 @@
 				</trim>
 			</foreach>
 		</where>
+		<if test="condition.groupByColumns.size() > 0">
+        	group by
+        	<foreach collection="condition.groupByColumns" item="groupByColumn" separator=",">
+				${groupByColumn}
+			</foreach>
+    	</if>
+		<trim prefix="order by" prefixOverrides="desc|asc">  
+			<foreach collection="condition.ascColumns" item="ascColumn" separator=",">
+				${ascColumn} asc
+			</foreach>
+			<if test="condition.descColumns.size() > 0">
+			,
+			</if>
+			<foreach collection="condition.descColumns" item="descColumn" separator=",">
+				${descColumn} desc
+			</foreach>
+		</trim>
 	</sql>
 </mapper>
