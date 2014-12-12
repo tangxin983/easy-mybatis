@@ -74,30 +74,6 @@ UpdateCondition与QueryCondition类似，用于构造更新和删除的条件。
 
 具体见[测试用例](https://github.com/tangxin983/easy-mybatis/blob/master/src/test/java/com/github/tx/mybatis/test/CrudMapperTest.java)
 
-## 二、物理分页(可单独使用)
+## 二、物理分页
 
-#### 1、配置插件
-
-```xml
-<plugins>
-	<plugin interceptor="com.github.tx.mybatis.interceptor.CacheKeyInterceptor" />
-	<plugin interceptor="com.github.tx.mybatis.interceptor.PageInterceptor">
-		<property name="dialect" value="mysql"/>
-  </plugin>
-</plugins>
-```
-目前dialect只支持mysql、oracle、hsqldb
-
-#### 2、使用
-
-构造一个Page对象作为参数传入即可。currentPage为当前页码，size为每页记录数。
-
-```java
-Page page = new Page();
-page.setCurrentPage(1);
-page.setSize(5);
-List<Blog> list = mapper.selectByPage(page);
-System.out.println(page.getRecordsTotal());
-System.out.println(page.getPageTotal());
-```
-查询完毕后Page对象中还提供了recordsTotal(总记录数)和pageTotal（总页数）。
+整合了abel533的分页插件3.3.0版。使用具体见http://git.oschina.net/free/Mybatis_PageHelper
