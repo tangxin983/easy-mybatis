@@ -6,13 +6,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 被注解的Mapper方法，将根据泛型对象生成对应的resultMap并将泛型对象加入参数
+ * 自动检测泛型对象
  * 
  * @author tangx
  * @since 2014年10月24日
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface ScanGeneric {
+public @interface DetectGeneric {
 
 }

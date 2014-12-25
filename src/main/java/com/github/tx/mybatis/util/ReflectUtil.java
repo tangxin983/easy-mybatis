@@ -15,7 +15,7 @@ import javax.persistence.Table;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
-import com.github.tx.mybatis.annotation.ScanGeneric;
+import com.github.tx.mybatis.annotation.DetectGeneric;
 
 /**
  * 反射工具类
@@ -370,7 +370,7 @@ public class ReflectUtil {
 	 * @return
 	 */
 	public static boolean isAutoMapping(Method method) {
-		if(method != null && method.isAnnotationPresent(ScanGeneric.class)){
+		if(method != null && method.isAnnotationPresent(DetectGeneric.class)){
 			return true;
 		}
 		return false;

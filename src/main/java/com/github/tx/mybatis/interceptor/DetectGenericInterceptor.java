@@ -35,7 +35,7 @@ import com.github.tx.mybatis.util.Constants;
 import com.github.tx.mybatis.util.ReflectUtil;
 
 /**
- * 自动生成泛型resultMap，并将泛型类设置到参数中
+ * 自动生成泛型对象对应的resultMap,并将泛型对象放入mybatis的参数map中
  * 
  * @author tangx
  * @since 2014年10月24日
@@ -46,7 +46,7 @@ import com.github.tx.mybatis.util.ReflectUtil;
 				ResultHandler.class }),
 		@Signature(type = Executor.class, method = "update", args = {
 				MappedStatement.class, Object.class }) })
-public class AutoMappingInterceptor implements Interceptor {
+public class DetectGenericInterceptor implements Interceptor {
 
 	private static final String GENERATE_RESULTMAP_NAME = "GenerateResultMap";
 
