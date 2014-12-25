@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.SelectProvider;
 import org.apache.ibatis.annotations.UpdateProvider;
 
-import com.github.tx.mybatis.annotation.AutoMapping;
+import com.github.tx.mybatis.annotation.ScanGeneric;
 import com.github.tx.mybatis.criteria.QueryCondition;
 import com.github.tx.mybatis.criteria.UpdateCondition;
 import com.github.tx.mybatis.util.Constants;
@@ -29,7 +29,7 @@ public interface CrudMapper<T> {
 	 * @return 实体列表
 	 */
 	@SelectProvider(type = SqlTemplate.class, method = "select")
-	@AutoMapping
+	@ScanGeneric
 	List<T> select();
 
 	/**
@@ -39,7 +39,7 @@ public interface CrudMapper<T> {
 	 * @return 实体对象
 	 */
 	@SelectProvider(type = SqlTemplate.class, method = "selectByPrimaryKey")
-	@AutoMapping
+	@ScanGeneric
 	T selectByPrimaryKey(Serializable id);
 
 	/**
@@ -50,7 +50,7 @@ public interface CrudMapper<T> {
 	 * @return 实体列表
 	 */
 	@SelectProvider(type = SqlTemplate.class, method = "selectByCondition")
-	@AutoMapping
+	@ScanGeneric
 	List<T> selectByCondition(
 			@Param(value = Constants.CRITERIA_KEY) QueryCondition condition);
 
@@ -60,7 +60,7 @@ public interface CrudMapper<T> {
 	 * @return 记录数
 	 */
 	@SelectProvider(type = SqlTemplate.class, method = "count")
-	@AutoMapping
+	@ScanGeneric
 	int count();
 	
 	/**
@@ -69,7 +69,7 @@ public interface CrudMapper<T> {
 	 * @return 记录数
 	 */
 	@SelectProvider(type = SqlTemplate.class, method = "countByCondition")
-	@AutoMapping
+	@ScanGeneric
 	int countByCondition(@Param(value = Constants.CRITERIA_KEY) QueryCondition condition);
 
 	/**
@@ -113,7 +113,7 @@ public interface CrudMapper<T> {
 	 * @return 删除影响的记录数
 	 */
 	@DeleteProvider(type = SqlTemplate.class, method = "deleteByPrimaryKey")
-	@AutoMapping
+	@ScanGeneric
 	int deleteByPrimaryKey(Serializable id);
 
 	/**
@@ -124,7 +124,7 @@ public interface CrudMapper<T> {
 	 * @return 删除影响的记录数
 	 */
 	@UpdateProvider(type = SqlTemplate.class, method = "deleteByCondition")
-	@AutoMapping
+	@ScanGeneric
 	int deleteByCondition(
 			@Param(value = Constants.CRITERIA_KEY) UpdateCondition condition);
 }
