@@ -24,7 +24,7 @@
 			<!-- 禁用合理化时，如果pageNum<1或pageNum>pages会返回空数据 -->
 			<property name="reasonable" value="true" />
 		</plugin>
-		<plugin interceptor="com.github.tx.mybatis.interceptor.ScanGenericInterceptor" />
+		<plugin interceptor="com.github.tx.mybatis.interceptor.DetectGenericInterceptor" />
 	</plugins>
 
 	<environments default="development">
