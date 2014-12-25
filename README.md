@@ -12,7 +12,7 @@
 
 ```xml
 <plugins>
-	<plugin interceptor="com.github.tx.mybatis.interceptor.AutoMappingInterceptor" />
+	<plugin interceptor="com.github.tx.mybatis.interceptor.DetectGenericInterceptor" />
 </plugins>
 ```
 
