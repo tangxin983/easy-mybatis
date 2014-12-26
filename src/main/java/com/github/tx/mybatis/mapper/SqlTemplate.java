@@ -122,7 +122,9 @@ public class SqlTemplate {
 		final Class<?> clazz = t.getClass();
 		return new SQL() {
 			{
-				if (StringUtils.isNotBlank(ReflectUtil.getIdFieldName(clazz))) {
+				String idFieldName = ReflectUtil.getIdFieldName(clazz);
+				if (StringUtils.isNotBlank(idFieldName)
+						&& (!ReflectUtil.isFieldNull(t, idFieldName))) {
 					INSERT_INTO(ReflectUtil.getTableName(clazz));
 					VALUES(ReflectUtil.getIdColumnName(clazz) + ","
 							+ ReflectUtil.insertColumnNameList(t), "#{"

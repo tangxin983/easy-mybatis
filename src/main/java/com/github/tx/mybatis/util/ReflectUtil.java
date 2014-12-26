@@ -415,7 +415,7 @@ public class ReflectUtil {
 	 * @param fieldName
 	 * @return
 	 */
-	private static boolean isFieldNull(Object obj, String fieldName) {
+	public static boolean isFieldNull(Object obj, String fieldName) {
 		try {
 			return FieldUtils.readField(obj, fieldName, true) == null ? true
 					: false;
